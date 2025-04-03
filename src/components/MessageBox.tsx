@@ -11,6 +11,7 @@ import {
   StopCircle,
   Layers3,
   Plus,
+  Sparkles,
 } from 'lucide-react';
 import Markdown, { MarkdownToJSX } from 'markdown-to-jsx';
 import Copy from './MessageActions/Copy';
@@ -92,7 +93,7 @@ const MessageBox = ({
   };
 
   return (
-    <div>
+    <div className="fade-in">
       {message.role === 'user' && (
         <div
           className={cn(
@@ -101,9 +102,14 @@ const MessageBox = ({
             'break-words',
           )}
         >
-          <h2 className="text-black dark:text-white font-medium text-3xl lg:w-9/12">
-            {message.content}
-          </h2>
+          <div className="flex items-center space-x-3">
+            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-400 to-purple-400 flex items-center justify-center text-white font-medium">
+              Y
+            </div>
+            <h2 className="text-black dark:text-white font-medium text-2xl lg:w-9/12">
+              {message.content}
+            </h2>
+          </div>
         </div>
       )}
 
@@ -114,10 +120,10 @@ const MessageBox = ({
             className="flex flex-col space-y-6 w-full lg:w-9/12"
           >
             {message.sources && message.sources.length > 0 && (
-              <div className="flex flex-col space-y-2">
-                <div className="flex flex-row items-center space-x-2">
+              <div className="glass p-5 rounded-2xl">
+                <div className="flex flex-row items-center space-x-2 mb-3">
                   <BookCopy className="text-black dark:text-white" size={20} />
-                  <h3 className="text-black dark:text-white font-medium text-xl">
+                  <h3 className="text-black dark:text-white font-medium text-lg">
                     Sources
                   </h3>
                 </div>
@@ -125,96 +131,82 @@ const MessageBox = ({
               </div>
             )}
             <div className="flex flex-col space-y-2">
-              <div className="flex flex-row items-center space-x-2">
-                <Disc3
-                  className={cn(
-                    'text-black dark:text-white',
-                    isLast && loading ? 'animate-spin' : 'animate-none',
-                  )}
-                  size={20}
-                />
-                <h3 className="text-black dark:text-white font-medium text-xl">
-                  Answer
-                </h3>
-              </div>
-
-              <Markdown
-                className={cn(
-                  'prose prose-h1:mb-3 prose-h2:mb-2 prose-h2:mt-6 prose-h2:font-[800] prose-h3:mt-4 prose-h3:mb-1.5 prose-h3:font-[600] dark:prose-invert prose-p:leading-relaxed prose-pre:p-0 font-[400]',
-                  'max-w-none break-words text-black dark:text-white',
-                )}
-                options={markdownOverrides}
-              >
-                {parsedMessage}
-              </Markdown>
-              {loading && isLast ? null : (
-                <div className="flex flex-row items-center justify-between w-full text-black dark:text-white py-4 -mx-2">
-                  <div className="flex flex-row items-center space-x-1">
-                    {/*  <button className="p-2 text-black/70 dark:text-white/70 rounded-xl hover:bg-light-secondary dark:hover:bg-dark-secondary transition duration-200 hover:text-black text-black dark:hover:text-white">
-                      <Share size={18} />
-                    </button> */}
-                    <Rewrite rewrite={rewrite} messageId={message.messageId} />
+              <div className="glass p-5 rounded-2xl relative overflow-hidden">
+                <div className="absolute -inset-[1px] bg-gradient-to-br from-blue-500/10 to-purple-500/10 rounded-2xl -z-10"></div>
+                
+                <div className="flex flex-row items-center space-x-2 mb-4">
+                  <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center">
+                    <Sparkles size={16} className="text-white" />
                   </div>
-                  <div className="flex flex-row items-center space-x-1">
-                    <Copy initialMessage={message.content} message={message} />
-                    <button
-                      onClick={() => {
-                        if (speechStatus === 'started') {
-                          stop();
-                        } else {
-                          start();
-                        }
-                      }}
-                      className="p-2 text-black/70 dark:text-white/70 rounded-xl hover:bg-light-secondary dark:hover:bg-dark-secondary transition duration-200 hover:text-black dark:hover:text-white"
-                    >
-                      {speechStatus === 'started' ? (
-                        <StopCircle size={18} />
-                      ) : (
-                        <Volume2 size={18} />
-                      )}
-                    </button>
-                  </div>
+                  <h3 className="text-black dark:text-white font-medium text-lg">
+                    Answer
+                  </h3>
                 </div>
-              )}
-              {isLast &&
-                message.suggestions &&
-                message.suggestions.length > 0 &&
-                message.role === 'assistant' &&
-                !loading && (
-                  <>
-                    <div className="h-px w-full bg-light-secondary dark:bg-dark-secondary" />
-                    <div className="flex flex-col space-y-3 text-black dark:text-white">
-                      <div className="flex flex-row items-center space-x-2 mt-4">
-                        <Layers3 />
-                        <h3 className="text-xl font-medium">Related</h3>
-                      </div>
-                      <div className="flex flex-col space-y-3">
-                        {message.suggestions.map((suggestion, i) => (
-                          <div
-                            className="flex flex-col space-y-3 text-sm"
-                            key={i}
-                          >
-                            <div className="h-px w-full bg-light-secondary dark:bg-dark-secondary" />
-                            <div
-                              onClick={() => {
-                                sendMessage(suggestion);
-                              }}
-                              className="cursor-pointer flex flex-row justify-between font-medium space-x-2 items-center"
-                            >
-                              <p className="transition duration-200 hover:text-[#24A0ED]">
-                                {suggestion}
-                              </p>
-                              <Plus
-                                size={20}
-                                className="text-[#24A0ED] flex-shrink-0"
-                              />
-                            </div>
-                          </div>
-                        ))}
-                      </div>
+
+                <Markdown
+                  className={cn(
+                    'prose prose-h1:mb-3 prose-h2:mb-2 prose-h2:mt-6 prose-h2:font-[600] prose-h3:mt-4 prose-h3:mb-1.5 prose-h3:font-[500] dark:prose-invert prose-p:leading-relaxed prose-pre:p-0 font-[400]',
+                    'max-w-none break-words text-black dark:text-white',
+                  )}
+                  options={markdownOverrides}
+                >
+                  {parsedMessage}
+                </Markdown>
+
+                {loading && isLast ? null : (
+                  <div className="flex flex-row items-center justify-between w-full text-black dark:text-white pt-5 mt-3 border-t border-black/5 dark:border-white/5">
+                    <div className="flex flex-row items-center space-x-1">
+                      <Rewrite rewrite={rewrite} messageId={message.messageId} />
                     </div>
-                  </>
+                    <div className="flex flex-row items-center space-x-1">
+                      <Copy initialMessage={message.content} message={message} />
+                      <button
+                        onClick={() => {
+                          if (speechStatus === 'started') {
+                            stop();
+                          } else {
+                            start();
+                          }
+                        }}
+                        className="p-2 text-black/60 dark:text-white/60 rounded-xl hover:bg-black/5 dark:hover:bg-white/5 transition duration-200 hover:text-black dark:hover:text-white"
+                      >
+                        {speechStatus === 'started' ? (
+                          <StopCircle size={18} />
+                        ) : (
+                          <Volume2 size={18} />
+                        )}
+                      </button>
+                    </div>
+                  </div>
                 )}
+
+                {isLast &&
+                  message.suggestions &&
+                  message.suggestions.length > 0 &&
+                  message.role === 'assistant' &&
+                  !loading && (
+                    <>
+                      <div className="h-px w-full bg-black/5 dark:bg-white/5 my-4" />
+                      <div className="flex flex-col space-y-4 text-black dark:text-white">
+                        <div className="flex flex-row items-center space-x-2">
+                          <Layers3 className="text-blue-500" />
+                          <h3 className="text-lg font-medium">Related Questions</h3>
+                        </div>
+                        <div className="flex flex-wrap gap-2">
+                          {message.suggestions.map((suggestion, i) => (
+                            <button
+                              key={i}
+                              onClick={() => sendMessage(suggestion)}
+                              className="glass py-2 px-4 rounded-full text-sm text-black/80 dark:text-white/80 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors duration-200 border border-blue-100 dark:border-blue-900/30 hover:border-blue-200 dark:hover:border-blue-800/30"
+                            >
+                              {suggestion}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    </>
+                  )}
+              </div>
             </div>
           </div>
           <div className="lg:sticky lg:top-20 flex flex-col items-center space-y-3 w-full lg:w-3/12 z-30 h-full pb-4">

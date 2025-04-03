@@ -2,7 +2,7 @@
 
 import DeleteChat from '@/components/DeleteChat';
 import { cn, formatTimeDifference } from '@/lib/utils';
-import { BookOpenText, ClockIcon, Delete, ScanEye } from 'lucide-react';
+import { BookOpenText, ClockIcon, Delete, ScanEye, Sparkles } from 'lucide-react';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 
@@ -57,53 +57,61 @@ const Page = () => {
       </svg>
     </div>
   ) : (
-    <div>
-      <div className="flex flex-col pt-4">
-        <div className="flex items-center">
-          <BookOpenText />
-          <h1 className="text-3xl font-medium p-2">Library</h1>
+    <div className="fade-in">
+      <div className="glass p-6 rounded-2xl mb-8 relative">
+        <div className="absolute -inset-[1px] bg-gradient-to-br from-blue-500/10 to-purple-500/10 rounded-2xl -z-10"></div>
+        <div className="flex items-center space-x-3">
+          <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center">
+            <BookOpenText className="text-white" size={20} />
+          </div>
+          <h1 className="text-3xl font-medium">Library</h1>
         </div>
-        <hr className="border-t border-[#2B2C2C] my-4 w-full" />
       </div>
-      {chats.length === 0 && (
-        <div className="flex flex-row items-center justify-center min-h-screen">
-          <p className="text-black/70 dark:text-white/70 text-sm">
-            No chats found.
+      
+      {chats && chats.length === 0 && (
+        <div className="flex flex-col items-center justify-center min-h-[50vh] space-y-4">
+          <div className="w-16 h-16 rounded-full bg-gradient-to-br from-blue-400/30 to-purple-400/30 flex items-center justify-center">
+            <BookOpenText className="text-blue-500 dark:text-blue-400" size={24} />
+          </div>
+          <p className="text-black/70 dark:text-white/70 text-center">
+            Your library is empty. Start chatting to save conversations.
           </p>
         </div>
       )}
-      {chats.length > 0 && (
-        <div className="flex flex-col pb-20 lg:pb-2">
+      
+      {chats && chats.length > 0 && (
+        <div className="flex flex-col space-y-4 pb-20 lg:pb-2">
           {chats.map((chat, i) => (
-            <div
-              className={cn(
-                'flex flex-col space-y-4 py-6',
-                i !== chats.length - 1
-                  ? 'border-b border-white-200 dark:border-dark-200'
-                  : '',
-              )}
+            <Link
+              href={`/c/${chat.id}`}
               key={i}
+              className="glass p-5 rounded-2xl transition-all duration-300 hover:shadow-lg hover:-translate-y-1 group"
             >
-              <Link
-                href={`/c/${chat.id}`}
-                className="text-black dark:text-white lg:text-xl font-medium truncate transition duration-200 hover:text-[#24A0ED] dark:hover:text-[#24A0ED] cursor-pointer"
-              >
-                {chat.title}
-              </Link>
-              <div className="flex flex-row items-center justify-between w-full">
-                <div className="flex flex-row items-center space-x-1 lg:space-x-1.5 text-black/70 dark:text-white/70">
-                  <ClockIcon size={15} />
+              <div className="flex flex-col space-y-3">
+                <div className="flex items-start justify-between">
+                  <div className="flex space-x-3 items-center">
+                    <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-400/20 to-purple-400/20 flex items-center justify-center group-hover:from-blue-400/30 group-hover:to-purple-400/30 transition-colors duration-300">
+                      <Sparkles className="text-blue-500 dark:text-blue-400" size={16} />
+                    </div>
+                    <h2 className="text-black dark:text-white lg:text-xl font-medium truncate transition duration-200 group-hover:text-blue-500 dark:group-hover:text-blue-400">
+                      {chat.title}
+                    </h2>
+                  </div>
+                  <DeleteChat
+                    chatId={chat?.id || ''}
+                    chats={chats || []}
+                    setChats={setChats}
+                  />
+                </div>
+                
+                <div className="flex items-center text-black/50 dark:text-white/50">
+                  <ClockIcon size={14} className="mr-1.5" />
                   <p className="text-xs">
-                    {formatTimeDifference(new Date(), chat.createdAt)} Ago
+                    {formatTimeDifference(new Date(), chat?.createdAt || '')} ago
                   </p>
                 </div>
-                <DeleteChat
-                  chatId={chat.id}
-                  chats={chats}
-                  setChats={setChats}
-                />
               </div>
-            </div>
+            </Link>
           ))}
         </div>
       )}

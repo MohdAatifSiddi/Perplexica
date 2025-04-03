@@ -9,8 +9,13 @@ export const metadata: Metadata = {
 
 const Home = () => {
   return (
-    <div>
-      <Suspense>
+    <div className="w-full fade-in">
+      <Suspense fallback={
+        <div className="flex flex-col items-center justify-center min-h-[50vh] space-y-5">
+          <div className="w-16 h-16 rounded-full bg-gradient-to-br from-blue-400/20 to-purple-400/20 animate-pulse"></div>
+          <div className="h-2 w-48 bg-black/5 dark:bg-white/5 rounded-full animate-pulse"></div>
+        </div>
+      }>
         <ChatWindow />
       </Suspense>
     </div>

@@ -62,7 +62,7 @@ const Chat = ({
   }, [messages]);
 
   return (
-    <div className="flex flex-col space-y-6 pt-8 pb-44 lg:pb-32 sm:mx-4 md:mx-8">
+    <div className="flex flex-col space-y-10 pt-8 pb-44 lg:pb-32 sm:mx-4 md:mx-8">
       {messages.map((msg, i) => {
         const isLast = i === messages.length - 1;
 
@@ -80,7 +80,7 @@ const Chat = ({
               sendMessage={sendMessage}
             />
             {!isLast && msg.role === 'assistant' && (
-              <div className="h-px w-full bg-light-secondary dark:bg-dark-secondary" />
+              <div className="h-px w-full bg-black/5 dark:bg-white/5" />
             )}
           </Fragment>
         );

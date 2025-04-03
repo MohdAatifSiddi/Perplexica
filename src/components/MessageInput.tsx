@@ -1,5 +1,5 @@
 import { cn } from '@/lib/utils';
-import { ArrowUp } from 'lucide-react';
+import { ArrowUp, Sparkles } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import TextareaAutosize from 'react-textarea-autosize';
 import Attach from './MessageInputActions/Attach';
@@ -26,6 +26,7 @@ const MessageInput = ({
   const [message, setMessage] = useState('');
   const [textareaRows, setTextareaRows] = useState(1);
   const [mode, setMode] = useState<'multi' | 'single'>('single');
+  const [isFocused, setIsFocused] = useState(false);
 
   useEffect(() => {
     if (textareaRows >= 2 && message && mode === 'single') {
@@ -75,8 +76,9 @@ const MessageInput = ({
         }
       }}
       className={cn(
-        'bg-light-secondary dark:bg-dark-secondary p-4 flex items-center overflow-hidden border border-light-200 dark:border-dark-200',
-        mode === 'multi' ? 'flex-col rounded-lg' : 'flex-row rounded-full',
+        'glass backdrop-blur-md transition-all duration-300',
+        mode === 'multi' ? 'flex-col rounded-2xl p-4' : 'flex-row rounded-full py-2 px-4',
+        isFocused ? 'shadow-lg bg-white/20 dark:bg-black/20' : ''
       )}
     >
       {mode === 'single' && (
@@ -87,14 +89,20 @@ const MessageInput = ({
           setFiles={setFiles}
         />
       )}
+      
+      {/* Pulsing cursor indicator */}
+      <div className={`absolute left-5 top-1/2 -translate-y-1/2 w-1 h-5 rounded-full bg-blue-400/50 transition-opacity duration-300 ${message || !isFocused || mode === 'multi' ? 'opacity-0' : 'opacity-100 animate-pulse'}`}></div>
+      
       <TextareaAutosize
         ref={inputRef}
         value={message}
         onChange={(e) => setMessage(e.target.value)}
+        onFocus={() => setIsFocused(true)}
+        onBlur={() => setIsFocused(false)}
         onHeightChange={(height, props) => {
           setTextareaRows(Math.ceil(height / props.rowHeight));
         }}
-        className="transition bg-transparent dark:placeholder:text-white/50 placeholder:text-sm text-sm dark:text-white resize-none focus:outline-none w-full px-2 max-h-24 lg:max-h-36 xl:max-h-48 flex-grow flex-shrink"
+        className="transition bg-transparent dark:placeholder:text-white/40 placeholder:text-black/40 placeholder:text-sm text-base dark:text-white resize-none focus:outline-none w-full px-2 max-h-24 lg:max-h-36 xl:max-h-48 flex-grow flex-shrink"
         placeholder="Ask a follow-up"
       />
       {mode === 'single' && (
@@ -105,14 +113,18 @@ const MessageInput = ({
           />
           <button
             disabled={message.trim().length === 0 || loading}
-            className="bg-[#24A0ED] text-white disabled:text-black/50 dark:disabled:text-white/50 hover:bg-opacity-85 transition duration-100 disabled:bg-[#e0e0dc79] dark:disabled:bg-[#ececec21] rounded-full p-2"
+            className="bg-gradient-to-r from-blue-500 to-purple-500 text-white disabled:from-gray-300 disabled:to-gray-400 disabled:text-black/50 dark:disabled:text-white/30 hover:shadow-lg transition-all duration-300 rounded-full p-2.5 transform hover:scale-105 active:scale-95 disabled:hover:scale-100"
           >
-            <ArrowUp className="bg-background" size={17} />
+            {message.trim().length === 0 ? (
+              <Sparkles className="text-white opacity-50" size={17} />
+            ) : (
+              <ArrowUp className="text-white" size={17} />
+            )}
           </button>
         </div>
       )}
       {mode === 'multi' && (
-        <div className="flex flex-row items-center justify-between w-full pt-2">
+        <div className="flex flex-row items-center justify-between w-full pt-3">
           <AttachSmall
             fileIds={fileIds}
             setFileIds={setFileIds}
@@ -126,9 +138,13 @@ const MessageInput = ({
             />
             <button
               disabled={message.trim().length === 0 || loading}
-              className="bg-[#24A0ED] text-white text-black/50 dark:disabled:text-white/50 hover:bg-opacity-85 transition duration-100 disabled:bg-[#e0e0dc79] dark:disabled:bg-[#ececec21] rounded-full p-2"
+              className="bg-gradient-to-r from-blue-500 to-purple-500 text-white disabled:from-gray-300 disabled:to-gray-400 disabled:text-black/50 dark:disabled:text-white/30 hover:shadow-lg transition-all duration-300 rounded-full p-2.5 transform hover:scale-105 active:scale-95 disabled:hover:scale-100"
             >
-              <ArrowUp className="bg-background" size={17} />
+              {message.trim().length === 0 ? (
+                <Sparkles className="text-white opacity-50" size={17} />
+              ) : (
+                <ArrowUp className="text-white" size={17} />
+              )}
             </button>
           </div>
         </div>

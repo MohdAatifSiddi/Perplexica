@@ -26,18 +26,22 @@ export default function RootLayout({
 }>) {
   return (
     <html className="h-full" lang="en" suppressHydrationWarning>
-      <body className={cn('h-full', montserrat.className)}>
+      <body className={cn('h-full relative overflow-hidden', montserrat.className)} suppressHydrationWarning>
+        <div className="fixed inset-0 bg-[#f8fafc] dark:bg-[#0f172a] -z-10" />
+        <div className="fixed inset-0 -z-10 opacity-50" />
         <ThemeProvider>
-          <Sidebar>{children}</Sidebar>
-          <Toaster
-            toastOptions={{
-              unstyled: true,
-              classNames: {
-                toast:
-                  'bg-light-primary dark:bg-dark-secondary dark:text-white/70 text-black-70 rounded-lg p-4 flex flex-row items-center space-x-2',
-              },
-            }}
-          />
+          <div className="relative z-10">
+            <Sidebar>{children}</Sidebar>
+            <Toaster
+              toastOptions={{
+                unstyled: true,
+                classNames: {
+                  toast:
+                    'glass fade-in dark:text-white/70 text-black-70 rounded-lg p-4 flex flex-row items-center space-x-2',
+                },
+              }}
+            />
+          </div>
         </ThemeProvider>
       </body>
     </html>
