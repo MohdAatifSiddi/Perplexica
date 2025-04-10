@@ -23,26 +23,41 @@ export const searchSearxng = async (
   query: string,
   opts?: SearxngSearchOptions,
 ) => {
-  const searxngURL = getSearxngApiEndpoint();
+  try {
+    const searxngURL = getSearxngApiEndpoint();
 
-  const url = new URL(`${searxngURL}/search?format=json`);
-  url.searchParams.append('q', query);
+    const url = new URL(`${searxngURL}/search?format=json`);
+    url.searchParams.append('q', query);
 
-  if (opts) {
-    Object.keys(opts).forEach((key) => {
-      const value = opts[key as keyof SearxngSearchOptions];
-      if (Array.isArray(value)) {
-        url.searchParams.append(key, value.join(','));
-        return;
+    if (opts) {
+      Object.keys(opts).forEach((key) => {
+        const value = opts[key as keyof SearxngSearchOptions];
+        if (Array.isArray(value)) {
+          url.searchParams.append(key, value.join(','));
+          return;
+        }
+        url.searchParams.append(key, value as string);
+      });
+    }
+
+    const res = await axios.get(url.toString(), {
+      timeout: 10000, // 10 second timeout
+      headers: {
+        'Accept': 'application/json',
+        'User-Agent': 'Weybre AI/1.0'
       }
-      url.searchParams.append(key, value as string);
     });
+
+    if (!res.data || !res.data.results) {
+      throw new Error('Invalid response from Searxng');
+    }
+
+    const results: SearxngSearchResult[] = res.data.results;
+    const suggestions: string[] = res.data.suggestions || [];
+
+    return { results, suggestions };
+  } catch (error) {
+    console.error('Searxng search error:', error);
+    return { results: [], suggestions: [] };
   }
-
-  const res = await axios.get(url.toString());
-
-  const results: SearxngSearchResult[] = res.data.results;
-  const suggestions: string[] = res.data.suggestions;
-
-  return { results, suggestions };
 };

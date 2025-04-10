@@ -6,30 +6,29 @@ node_modules/
 # Testing
 coverage/
 
-# Next.js
-.next/
-out/
-
 # Production
 build/
 dist/
+.next/
+out/
 
-# Misc
-.DS_Store
-*.pem
+# Environment files
 .env
 .env.local
 .env.development.local
 .env.test.local
 .env.production.local
 
-# Debug
+# Config files
+config.toml
+*.toml
+
+# Logs
+logs
+*.log
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
-
-# Local config
-config.toml
 
 # IDE
 .idea/
@@ -37,23 +36,29 @@ config.toml
 *.swp
 *.swo
 
+# OS
+.DS_Store
+Thumbs.db
+
+# Database
+*.db
+*.sqlite
+*.sqlite3
+
+# Cache
+.cache/
+.temp/
+.tmp/
+
+# Misc
+*.pem
+
 # Docker
 .docker/
 docker-compose.override.yml
 
-# Logs
-logs/
-*.log
-
 # IDE/Editor specific
 *.iml
 
-# Config files
-config.toml
-
-# Log files
-*.log
-
 # Db
-db.sqlite
 /searxng

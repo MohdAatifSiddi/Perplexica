@@ -49,29 +49,45 @@ export const embeddingModelProviders: Record<
 export const getAvailableChatModelProviders = async () => {
   const chatModels: Record<string, Record<string, ChatModel>> = {};
 
+  // Load custom OpenAI model first
   const customOpenAiApiKey = getCustomOpenaiApiKey();
   const customOpenAiApiUrl = getCustomOpenaiApiUrl();
   const customOpenAiModelName = getCustomOpenaiModelName();
 
   if (customOpenAiApiKey && customOpenAiApiUrl && customOpenAiModelName) {
-    // Extract deployment name from model name
-    const deploymentName = customOpenAiModelName.split('/').pop() || customOpenAiModelName;
-    
-    chatModels['custom-openai'] = {
-      [customOpenAiModelName]: {
-        displayName: `Custom OpenAI (${customOpenAiModelName})`,
-        model: new ChatOpenAI({
-          openAIApiKey: customOpenAiApiKey,
-          modelName: deploymentName,
-          temperature: 0.7,
-          configuration: {
-            baseURL: `${customOpenAiApiUrl}/openai/deployments/${deploymentName}`,
-            defaultQuery: { 'api-version': '2024-02-15-preview' },
-            defaultHeaders: { 'api-key': customOpenAiApiKey }
-          },
-        }) as unknown as BaseChatModel,
+    try {
+      const deploymentName = customOpenAiModelName.split('/').pop() || customOpenAiModelName;
+      
+      chatModels['custom-openai'] = {
+        [customOpenAiModelName]: {
+          displayName: `Custom OpenAI (${customOpenAiModelName})`,
+          model: new ChatOpenAI({
+            openAIApiKey: customOpenAiApiKey,
+            modelName: deploymentName,
+            temperature: 0.7,
+            configuration: {
+              baseURL: `${customOpenAiApiUrl}/openai/deployments/${deploymentName}`,
+              defaultQuery: { 'api-version': '2024-02-15-preview' },
+              defaultHeaders: { 'api-key': customOpenAiApiKey }
+            },
+          }) as unknown as BaseChatModel,
+        }
+      };
+    } catch (error) {
+      console.error('Error initializing custom OpenAI model:', error);
+    }
+  }
+
+  // Load other providers
+  for (const [provider, loader] of Object.entries(chatModelProviders)) {
+    try {
+      const models = await loader();
+      if (models && Object.keys(models).length > 0) {
+        chatModels[provider] = models;
       }
-    };
+    } catch (error) {
+      console.error(`Error loading ${provider} models:`, error);
+    }
   }
 
   return chatModels;
@@ -80,26 +96,43 @@ export const getAvailableChatModelProviders = async () => {
 export const getAvailableEmbeddingModelProviders = async () => {
   const models: Record<string, Record<string, EmbeddingModel>> = {};
 
+  // Load custom OpenAI embeddings first
   const customOpenAiApiKey = getCustomOpenaiApiKey();
   const customOpenAiApiUrl = getCustomOpenaiApiUrl();
 
   if (customOpenAiApiKey && customOpenAiApiUrl) {
-    const deploymentName = 'text-embedding-3-small';
-    
-    models['custom-openai'] = {
-      [deploymentName]: {
-        displayName: 'Custom OpenAI Embeddings',
-        model: new OpenAIEmbeddings({
-          openAIApiKey: customOpenAiApiKey,
-          modelName: deploymentName,
-          configuration: {
-            baseURL: `${customOpenAiApiUrl}/openai/deployments/${deploymentName}`,
-            defaultQuery: { 'api-version': '2024-02-15-preview' },
-            defaultHeaders: { 'api-key': customOpenAiApiKey }
-          },
-        }) as unknown as Embeddings,
+    try {
+      const deploymentName = 'text-embedding-3-small';
+      
+      models['custom-openai'] = {
+        [deploymentName]: {
+          displayName: 'Custom OpenAI Embeddings',
+          model: new OpenAIEmbeddings({
+            openAIApiKey: customOpenAiApiKey,
+            modelName: deploymentName,
+            configuration: {
+              baseURL: `${customOpenAiApiUrl}/openai/deployments/${deploymentName}`,
+              defaultQuery: { 'api-version': '2024-02-15-preview' },
+              defaultHeaders: { 'api-key': customOpenAiApiKey }
+            },
+          }) as unknown as Embeddings,
+        }
+      };
+    } catch (error) {
+      console.error('Error initializing custom OpenAI embeddings:', error);
+    }
+  }
+
+  // Load other providers
+  for (const [provider, loader] of Object.entries(embeddingModelProviders)) {
+    try {
+      const providerModels = await loader();
+      if (providerModels && Object.keys(providerModels).length > 0) {
+        models[provider] = providerModels;
       }
-    };
+    } catch (error) {
+      console.error(`Error loading ${provider} embeddings:`, error);
+    }
   }
 
   return models;

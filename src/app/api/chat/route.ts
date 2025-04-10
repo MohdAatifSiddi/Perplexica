@@ -261,11 +261,21 @@ export const POST = async (req: Request) => {
 
     await handleHistorySave(message, humanMessageId, focusMode, files);
 
-    const llm = chatModelProviders[chatModel.provider]?.[chatModel.name];
-    const embeddings = embeddingModelProviders[embeddingModel.provider]?.[embeddingModel.name];
+    // Load available models
+    const availableChatModels = await getAvailableChatModelProviders();
+    const availableEmbeddingModels = await getAvailableEmbeddingModelProviders();
+    
+    const llm = availableChatModels[chatModel.provider]?.[chatModel.name];
+    const embeddings = availableEmbeddingModels[embeddingModel.provider]?.[embeddingModel.name];
 
     if (!llm || !embeddings) {
-      throw new Error('Invalid model configuration');
+      console.error('Model configuration error:', {
+        chatModel,
+        embeddingModel,
+        availableChatModels: Object.keys(availableChatModels),
+        availableEmbeddingModels: Object.keys(availableEmbeddingModels)
+      });
+      throw new Error('Invalid model configuration. Please check your model settings.');
     }
 
     const searchAgent = new MetaSearchAgent({
@@ -273,9 +283,9 @@ export const POST = async (req: Request) => {
       rerank: optimizationMode !== 'speed',
       summarizer: optimizationMode === 'quality',
       rerankThreshold: 0.7,
-      queryGeneratorPrompt: prompts[focusMode as keyof typeof prompts].retriever,
-      responsePrompt: prompts[focusMode as keyof typeof prompts].response,
-      activeEngines: searchHandlers[focusMode as keyof typeof searchHandlers].engines,
+      queryGeneratorPrompt: prompts[`${focusMode}RetrieverPrompt` as keyof typeof prompts] || '',
+      responsePrompt: prompts[`${focusMode}ResponsePrompt` as keyof typeof prompts] || '',
+      activeEngines: (searchHandlers[focusMode as keyof typeof searchHandlers] as any)?.config?.activeEngines || [],
     });
 
     const langchainHistory = history.map(([role, content]) => {
@@ -288,8 +298,8 @@ export const POST = async (req: Request) => {
     const emitter = await searchAgent.searchAndAnswer(
       message.content,
       langchainHistory,
-      llm,
-      embeddings,
+      llm.model,
+      embeddings.model,
       optimizationMode,
       files,
       systemInstructions,
