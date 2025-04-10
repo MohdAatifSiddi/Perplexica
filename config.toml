@@ -1,0 +1,19 @@
+[GENERAL]
+SIMILARITY_MEASURE = "cosine"
+KEEP_ALIVE = "5m"
+
+[MODELS]
+OPENAI = { API_KEY = "", API_URL = "" }
+GROQ = { API_KEY = "" }
+ANTHROPIC = { API_KEY = "" }
+GEMINI = { API_KEY = "" }
+DEEPSEEK = { API_KEY = "" }
+OLLAMA = { API_URL = "" }
+
+[MODELS.CUSTOM_OPENAI]
+API_KEY = "5BjV2gm9Ry0tVt9ID7gBynw8Ee6Ewm56zALIirWB36AV0BzXIJ9rJQQJ99BDACHYHv6XJ3w3AAAAACOGVYIm"
+API_URL = "https://mekot-m98ufofa-eastus2.openai.azure.com"
+MODEL_NAME = "gpt-4.5-preview"
+
+[API_ENDPOINTS]
+SEARXNG = "http://localhost:4000"
