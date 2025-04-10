@@ -6,7 +6,7 @@ import {
   getCustomOpenaiApiUrl,
   getCustomOpenaiModelName,
 } from '../config';
-import { ChatOpenAI } from '@langchain/openai';
+import { ChatOpenAI, OpenAIEmbeddings } from '@langchain/openai';
 import { loadOllamaChatModels, loadOllamaEmbeddingModels } from './ollama';
 import { loadGroqChatModels } from './groq';
 import { loadAnthropicChatModels } from './anthropic';
@@ -47,48 +47,59 @@ export const embeddingModelProviders: Record<
 };
 
 export const getAvailableChatModelProviders = async () => {
-  const models: Record<string, Record<string, ChatModel>> = {};
-
-  for (const provider in chatModelProviders) {
-    const providerModels = await chatModelProviders[provider]();
-    if (Object.keys(providerModels).length > 0) {
-      models[provider] = providerModels;
-    }
-  }
+  const chatModels: Record<string, Record<string, ChatModel>> = {};
 
   const customOpenAiApiKey = getCustomOpenaiApiKey();
   const customOpenAiApiUrl = getCustomOpenaiApiUrl();
   const customOpenAiModelName = getCustomOpenaiModelName();
 
-  models['custom_openai'] = {
-    ...(customOpenAiApiKey && customOpenAiApiUrl && customOpenAiModelName
-      ? {
-          [customOpenAiModelName]: {
-            displayName: customOpenAiModelName,
-            model: new ChatOpenAI({
-              openAIApiKey: customOpenAiApiKey,
-              modelName: customOpenAiModelName,
-              temperature: 0.7,
-              configuration: {
-                baseURL: customOpenAiApiUrl,
-              },
-            }) as unknown as BaseChatModel,
+  if (customOpenAiApiKey && customOpenAiApiUrl && customOpenAiModelName) {
+    // Extract deployment name from model name
+    const deploymentName = customOpenAiModelName.split('/').pop() || customOpenAiModelName;
+    
+    chatModels['custom-openai'] = {
+      [customOpenAiModelName]: {
+        displayName: `Custom OpenAI (${customOpenAiModelName})`,
+        model: new ChatOpenAI({
+          openAIApiKey: customOpenAiApiKey,
+          modelName: deploymentName,
+          temperature: 0.7,
+          configuration: {
+            baseURL: `${customOpenAiApiUrl}/openai/deployments/${deploymentName}`,
+            defaultQuery: { 'api-version': '2024-02-15-preview' },
+            defaultHeaders: { 'api-key': customOpenAiApiKey }
           },
-        }
-      : {}),
-  };
+        }) as unknown as BaseChatModel,
+      }
+    };
+  }
 
-  return models;
+  return chatModels;
 };
 
 export const getAvailableEmbeddingModelProviders = async () => {
   const models: Record<string, Record<string, EmbeddingModel>> = {};
 
-  for (const provider in embeddingModelProviders) {
-    const providerModels = await embeddingModelProviders[provider]();
-    if (Object.keys(providerModels).length > 0) {
-      models[provider] = providerModels;
-    }
+  const customOpenAiApiKey = getCustomOpenaiApiKey();
+  const customOpenAiApiUrl = getCustomOpenaiApiUrl();
+
+  if (customOpenAiApiKey && customOpenAiApiUrl) {
+    const deploymentName = 'text-embedding-3-small';
+    
+    models['custom-openai'] = {
+      [deploymentName]: {
+        displayName: 'Custom OpenAI Embeddings',
+        model: new OpenAIEmbeddings({
+          openAIApiKey: customOpenAiApiKey,
+          modelName: deploymentName,
+          configuration: {
+            baseURL: `${customOpenAiApiUrl}/openai/deployments/${deploymentName}`,
+            defaultQuery: { 'api-version': '2024-02-15-preview' },
+            defaultHeaders: { 'api-key': customOpenAiApiKey }
+          },
+        }) as unknown as Embeddings,
+      }
+    };
   }
 
   return models;

@@ -61,70 +61,99 @@ const handleEmitterEvents = async (
 ) => {
   let recievedMessage = '';
   let sources: any[] = [];
+  let isStreamClosed = false;
 
-  stream.on('data', (data) => {
-    const parsedData = JSON.parse(data);
-    if (parsedData.type === 'response') {
-      writer.write(
-        encoder.encode(
-          JSON.stringify({
-            type: 'message',
-            data: parsedData.data,
-            messageId: aiMessageId,
-          }) + '\n',
-        ),
-      );
+  const closeStream = async () => {
+    if (!isStreamClosed) {
+      isStreamClosed = true;
+      try {
+        await writer.close();
+      } catch (error) {
+        console.error('Error closing stream:', error);
+      }
+    }
+  };
 
-      recievedMessage += parsedData.data;
-    } else if (parsedData.type === 'sources') {
-      writer.write(
-        encoder.encode(
-          JSON.stringify({
-            type: 'sources',
-            data: parsedData.data,
-            messageId: aiMessageId,
-          }) + '\n',
-        ),
-      );
+  stream.on('data', async (data) => {
+    try {
+      const parsedData = JSON.parse(data);
+      if (parsedData.type === 'response') {
+        await writer.write(
+          encoder.encode(
+            JSON.stringify({
+              type: 'message',
+              data: parsedData.data,
+              messageId: aiMessageId,
+            }) + '\n',
+          ),
+        );
 
-      sources = parsedData.data;
+        recievedMessage += parsedData.data;
+      } else if (parsedData.type === 'sources') {
+        await writer.write(
+          encoder.encode(
+            JSON.stringify({
+              type: 'sources',
+              data: parsedData.data,
+              messageId: aiMessageId,
+            }) + '\n',
+          ),
+        );
+
+        sources = parsedData.data;
+      }
+    } catch (error) {
+      console.error('Error processing stream data:', error);
+      await closeStream();
     }
   });
-  stream.on('end', () => {
-    writer.write(
-      encoder.encode(
-        JSON.stringify({
-          type: 'messageEnd',
-          messageId: aiMessageId,
-        }) + '\n',
-      ),
-    );
-    writer.close();
 
-    db.insert(messagesSchema)
-      .values({
-        content: recievedMessage,
-        chatId: chatId,
-        messageId: aiMessageId,
-        role: 'assistant',
-        metadata: JSON.stringify({
-          createdAt: new Date(),
-          ...(sources && sources.length > 0 && { sources }),
-        }),
-      })
-      .execute();
+  stream.on('end', async () => {
+    try {
+      await writer.write(
+        encoder.encode(
+          JSON.stringify({
+            type: 'messageEnd',
+            messageId: aiMessageId,
+          }) + '\n',
+        ),
+      );
+
+      await db.insert(messagesSchema)
+        .values({
+          content: recievedMessage,
+          chatId: chatId,
+          messageId: aiMessageId,
+          role: 'assistant',
+          metadata: JSON.stringify({
+            createdAt: new Date(),
+            ...(sources && sources.length > 0 && { sources }),
+          }),
+        })
+        .execute();
+
+      await closeStream();
+    } catch (error) {
+      console.error('Error handling stream end:', error);
+      await closeStream();
+    }
   });
-  stream.on('error', (data) => {
-    const parsedData = JSON.parse(data);
-    writer.write(
-      encoder.encode(
-        JSON.stringify({
-          type: 'error',
-          data: parsedData.data,
-        }),
-      ),
-    );
-    writer.close();
+
+  stream.on('error', async (error) => {
+    console.error('Stream error:', error);
+    try {
+      await writer.write(
+        encoder.encode(
+          JSON.stringify({
+            type: 'error',
+            data: error.message || 'An error occurred while processing the request',
+          }) + '\n',
+        ),
+      );
+    } catch (writeError) {
+      console.error('Error writing error message:', writeError);
+    }
+    await closeStream();
   });
 };
 
@@ -181,125 +210,107 @@ const handleHistorySave = async (
   }
 };
 
-export const POST = async (req: Request) => {
+export const GET = async (req: Request) => {
   try {
-    const body = (await req.json()) as Body;
-    const { message } = body;
-
-    if (message.content === '') {
-      return Response.json(
-        {
-          message: 'Please provide a message to process',
-        },
-        { status: 400 },
-      );
-    }
-
     const [chatModelProviders, embeddingModelProviders] = await Promise.all([
       getAvailableChatModelProviders(),
       getAvailableEmbeddingModelProviders(),
     ]);
 
-    const chatModelProvider =
-      chatModelProviders[
-        body.chatModel?.provider || Object.keys(chatModelProviders)[0]
-      ];
-    const chatModel =
-      chatModelProvider[
-        body.chatModel?.name || Object.keys(chatModelProvider)[0]
-      ];
-
-    const embeddingProvider =
-      embeddingModelProviders[
-        body.embeddingModel?.provider || Object.keys(embeddingModelProviders)[0]
-      ];
-    const embeddingModel =
-      embeddingProvider[
-        body.embeddingModel?.name || Object.keys(embeddingProvider)[0]
-      ];
-
-    let llm: BaseChatModel | undefined;
-    let embedding = embeddingModel.model;
-
-    if (body.chatModel?.provider === 'custom_openai') {
-      llm = new ChatOpenAI({
-        openAIApiKey: getCustomOpenaiApiKey(),
-        modelName: getCustomOpenaiModelName(),
-        temperature: 0.7,
-        configuration: {
-          baseURL: getCustomOpenaiApiUrl(),
-        },
-      }) as unknown as BaseChatModel;
-    } else if (chatModelProvider && chatModel) {
-      llm = chatModel.model;
-    }
-
-    if (!llm) {
-      return Response.json({ error: 'Invalid chat model' }, { status: 400 });
-    }
-
-    if (!embedding) {
-      return Response.json(
-        { error: 'Invalid embedding model' },
-        { status: 400 },
-      );
-    }
-
-    const humanMessageId =
-      message.messageId ?? crypto.randomBytes(7).toString('hex');
-    const aiMessageId = crypto.randomBytes(7).toString('hex');
-
-    const history: BaseMessage[] = body.history.map((msg) => {
-      if (msg[0] === 'human') {
-        return new HumanMessage({
-          content: msg[1],
-        });
-      } else {
-        return new AIMessage({
-          content: msg[1],
-        });
-      }
-    });
-
-    const handler = searchHandlers[body.focusMode];
-
-    if (!handler) {
-      return Response.json(
-        {
-          message: 'Invalid focus mode',
-        },
-        { status: 400 },
-      );
-    }
-
-    const stream = await handler.searchAndAnswer(
-      message.content,
-      history,
-      llm,
-      embedding,
-      body.optimizationMode,
-      body.files,
-      body.systemInstructions,
-    );
-
-    const responseStream = new TransformStream();
-    const writer = responseStream.writable.getWriter();
-    const encoder = new TextEncoder();
-
-    handleEmitterEvents(stream, writer, encoder, aiMessageId, message.chatId);
-    handleHistorySave(message, humanMessageId, body.focusMode, body.files);
-
-    return new Response(responseStream.readable, {
-      headers: {
-        'Content-Type': 'text/event-stream',
-        Connection: 'keep-alive',
-        'Cache-Control': 'no-cache, no-transform',
+    return Response.json({
+      status: 'ok',
+      message: 'Chat API is running',
+      availableModels: {
+        chat: chatModelProviders,
+        embedding: embeddingModelProviders,
       },
     });
-  } catch (err) {
-    console.error('An error occurred while processing chat request:', err);
+  } catch (error) {
+    console.error('Error in GET /api/chat:', error);
     return Response.json(
-      { message: 'An error occurred while processing chat request' },
+      { error: 'Failed to get available models' },
+      { status: 500 },
+    );
+  }
+};
+
+export const POST = async (req: Request) => {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => {
+    controller.abort();
+    console.error('Request timeout after 30 seconds');
+  }, 30000);
+
+  try {
+    const body = (await req.json()) as Body;
+    const { message, optimizationMode, focusMode, history, files, chatModel, embeddingModel, systemInstructions } = body;
+
+    if (!message.content) {
+      return Response.json(
+        { status: 'error', message: 'Message content is required' },
+        { status: 400 },
+      );
+    }
+
+    const stream = new TransformStream();
+    const writer = stream.writable.getWriter();
+    const encoder = new TextEncoder();
+
+    const humanMessageId = crypto.randomUUID();
+    const aiMessageId = crypto.randomUUID();
+
+    await handleHistorySave(message, humanMessageId, focusMode, files);
+
+    const llm = chatModelProviders[chatModel.provider]?.[chatModel.name];
+    const embeddings = embeddingModelProviders[embeddingModel.provider]?.[embeddingModel.name];
+
+    if (!llm || !embeddings) {
+      throw new Error('Invalid model configuration');
+    }
+
+    const searchAgent = new MetaSearchAgent({
+      searchWeb: true,
+      rerank: optimizationMode !== 'speed',
+      summarizer: optimizationMode === 'quality',
+      rerankThreshold: 0.7,
+      queryGeneratorPrompt: prompts[focusMode as keyof typeof prompts].retriever,
+      responsePrompt: prompts[focusMode as keyof typeof prompts].response,
+      activeEngines: searchHandlers[focusMode as keyof typeof searchHandlers].engines,
+    });
+
+    const langchainHistory = history.map(([role, content]) => {
+      if (role === 'user') {
+        return new HumanMessage(content);
+      }
+      return new AIMessage(content);
+    });
+
+    const emitter = await searchAgent.searchAndAnswer(
+      message.content,
+      langchainHistory,
+      llm,
+      embeddings,
+      optimizationMode,
+      files,
+      systemInstructions,
+    );
+
+    handleEmitterEvents(emitter, writer, encoder, aiMessageId, message.chatId);
+
+    clearTimeout(timeout);
+
+    return new Response(stream.readable, {
+      headers: {
+        'Content-Type': 'text/event-stream',
+        'Cache-Control': 'no-cache',
+        'Connection': 'keep-alive',
+      },
+    });
+  } catch (error) {
+    clearTimeout(timeout);
+    console.error('Error in POST /api/chat:', error);
+    return Response.json(
+      { status: 'error', message: 'Internal server error' },
       { status: 500 },
     );
   }

@@ -61,8 +61,6 @@ class MetaSearchAgent implements MetaSearchAgentType {
   }
 
   private async createSearchRetrieverChain(llm: BaseChatModel) {
-    (llm as unknown as ChatOpenAI).temperature = 0;
-
     return RunnableSequence.from([
       PromptTemplate.fromTemplate(this.config.queryGeneratorPrompt),
       llm,

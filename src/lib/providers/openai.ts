@@ -1,5 +1,5 @@
 import { ChatOpenAI, OpenAIEmbeddings } from '@langchain/openai';
-import { getOpenaiApiKey } from '../config';
+import { getOpenaiApiKey, getOpenaiApiUrl } from '../config';
 import { ChatModel, EmbeddingModel } from '.';
 import { BaseChatModel } from '@langchain/core/language_models/chat_models';
 import { Embeddings } from '@langchain/core/embeddings';
@@ -40,6 +40,7 @@ const openaiEmbeddingModels: Record<string, string>[] = [
 
 export const loadOpenAIChatModels = async () => {
   const openaiApiKey = getOpenaiApiKey();
+  const openaiApiUrl = getOpenaiApiUrl();
 
   if (!openaiApiKey) return {};
 
@@ -53,6 +54,11 @@ export const loadOpenAIChatModels = async () => {
           openAIApiKey: openaiApiKey,
           modelName: model.key,
           temperature: 0.7,
+          configuration: openaiApiUrl ? {
+            baseURL: openaiApiUrl,
+            defaultQuery: { 'api-version': '2024-02-15-preview' },
+            defaultHeaders: { 'api-key': openaiApiKey }
+          } : undefined,
         }) as unknown as BaseChatModel,
       };
     });
@@ -66,6 +72,7 @@ export const loadOpenAIChatModels = async () => {
 
 export const loadOpenAIEmbeddingModels = async () => {
   const openaiApiKey = getOpenaiApiKey();
+  const openaiApiUrl = getOpenaiApiUrl();
 
   if (!openaiApiKey) return {};
 
@@ -78,6 +85,11 @@ export const loadOpenAIEmbeddingModels = async () => {
         model: new OpenAIEmbeddings({
           openAIApiKey: openaiApiKey,
           modelName: model.key,
+          configuration: openaiApiUrl ? {
+            baseURL: openaiApiUrl,
+            defaultQuery: { 'api-version': '2024-02-15-preview' },
+            defaultHeaders: { 'api-key': openaiApiKey }
+          } : undefined,
         }) as unknown as Embeddings,
       };
     });

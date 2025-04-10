@@ -12,6 +12,7 @@ interface Config {
   MODELS: {
     OPENAI: {
       API_KEY: string;
+      API_URL: string;
     };
     GROQ: {
       API_KEY: string;
@@ -54,6 +55,8 @@ export const getSimilarityMeasure = () =>
 export const getKeepAlive = () => loadConfig().GENERAL.KEEP_ALIVE;
 
 export const getOpenaiApiKey = () => loadConfig().MODELS.OPENAI.API_KEY;
+
+export const getOpenaiApiUrl = () => loadConfig().MODELS.OPENAI.API_URL || '';
 
 export const getGroqApiKey = () => loadConfig().MODELS.GROQ.API_KEY;
 

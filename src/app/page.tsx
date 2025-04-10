@@ -3,8 +3,8 @@ import { Metadata } from 'next';
 import { Suspense } from 'react';
 
 export const metadata: Metadata = {
-  title: 'Chat - Perplexica',
-  description: 'Chat with the internet, chat with Perplexica.',
+  title: 'Chat - Weybre AI',
+  description: 'Chat with the internet, chat with Weybre AI.',
 };
 
 const Home = () => {

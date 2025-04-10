@@ -1,52 +1,67 @@
-# How to Contribute to Perplexica
+# Contributing to Weybre AI
 
-Thanks for your interest in contributing to Perplexica! Your help makes this project better. This guide explains how to contribute effectively.
+Thank you for your interest in contributing to Weybre AI! This document provides guidelines and instructions for contributing to the project.
 
-Perplexica is a modern AI chat application with advanced search capabilities.
+## Code of Conduct
+
+By participating in this project, you agree to abide by our Code of Conduct. Please be respectful and considerate of others.
+
+## Getting Started
+
+1. Fork the repository
+2. Clone your fork: `git clone https://github.com/your-username/weybre-ai.git`
+3. Create a new branch: `git checkout -b feature/your-feature-name`
+4. Install dependencies: `npm install`
+5. Make your changes
+6. Test your changes
+7. Commit your changes: `git commit -m "Description of your changes"`
+8. Push to your fork: `git push origin feature/your-feature-name`
+9. Create a Pull Request
+
+## Development Setup
+
+1. Copy `sample.config.toml` to `config.toml` and update with your configuration
+2. Start the development server: `npm run dev`
+3. Open [http://localhost:3000](http://localhost:3000) in your browser
 
 ## Project Structure
 
-Perplexica's codebase is organized as follows:
+- `src/app/` - Next.js app directory
+- `src/components/` - React components
+- `src/lib/` - Core library code
+- `src/styles/` - CSS and styling
+- `public/` - Static assets
 
-- **UI Components and Pages**:
-  - **Components (`src/components`)**: Reusable UI components.
-  - **Pages and Routes (`src/app`)**: Next.js app directory structure with page components.
-    - Main app routes include: home (`/`), chat (`/c`), discover (`/discover`), library (`/library`), and settings (`/settings`).
-  - **API Routes (`src/app/api`)**: API endpoints implemented with Next.js API routes.
-    - `/api/chat`: Handles chat interactions.
-    - `/api/search`: Provides direct access to Perplexica's search capabilities.
-    - Other endpoints for models, files, and suggestions.
-- **Backend Logic (`src/lib`)**: Contains all the backend functionality including search, database, and API logic.
-  - The search functionality is present inside `src/lib/search` directory.
-  - All of the focus modes are implemented using the Meta Search Agent class in `src/lib/search/metaSearchAgent.ts`.
-  - Database functionality is in `src/lib/db`.
-  - Chat model and embedding model providers are managed in `src/lib/providers`.
-  - Prompt templates and LLM chain definitions are in `src/lib/prompts` and `src/lib/chains` respectively.
+## Code Style
 
-## API Documentation
+- Use TypeScript for all new code
+- Follow the existing code style
+- Use meaningful variable and function names
+- Add comments for complex logic
+- Keep functions small and focused
+- Use async/await for asynchronous code
+- Handle errors appropriately
 
-Perplexica exposes several API endpoints for programmatic access, including:
+## Testing
 
-- **Search API**: Access Perplexica's advanced search capabilities directly via the `/api/search` endpoint. For detailed documentation, see `docs/api/search.md`.
+- Write tests for new features
+- Ensure all tests pass before submitting a PR
+- Update tests when modifying existing features
 
-## Setting Up Your Environment
+## Documentation
 
-Before diving into coding, setting up your local environment is key. Here's what you need to do:
+- Update documentation when adding new features
+- Keep README.md up to date
+- Document any breaking changes
 
-1. In the root directory, locate the `sample.config.toml` file.
-2. Rename it to `config.toml` and fill in the necessary configuration fields.
-3. Run `npm install` to install all dependencies.
-4. Run `npm run db:push` to set up the local sqlite database.
-5. Use `npm run dev` to start the application in development mode.
+## Pull Request Process
 
-**Please note**: Docker configurations are present for setting up production environments, whereas `npm run dev` is used for development purposes.
+1. Update the README.md with details of changes if needed
+2. Update the documentation if needed
+3. Ensure the PR description clearly describes the problem and solution
+4. Include relevant tests
+5. The PR will be reviewed by maintainers
 
-## Coding and Contribution Practices
+## License
 
-Before committing changes:
-
-1. Ensure that your code functions correctly by thorough testing.
-2. Always run `npm run format:write` to format your code according to the project's coding standards. This helps maintain consistency and code quality.
-3. We currently do not have a code of conduct, but it is in the works. In the meantime, please be mindful of how you engage with the project and its community.
-
-Following these steps will help maintain the integrity of Perplexica's codebase and facilitate a smoother integration of your valuable contributions. Thank you for your support and commitment to improving Perplexica.
+By contributing to Weybre AI, you agree that your contributions will be licensed under the project's license.

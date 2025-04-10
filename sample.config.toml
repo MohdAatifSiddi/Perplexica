@@ -1,9 +1,49 @@
-[GENERAL]
-SIMILARITY_MEASURE = "cosine" # "cosine" or "dot"
-KEEP_ALIVE = "5m" # How long to keep Ollama models loaded into memory. (Instead of using -1 use "-1m")
+# Weybre AI Configuration
+# Copy this file to config.toml and update with your values
 
+# OpenAI Configuration
+[OPENAI]
+API_KEY = "your-openai-api-key"
+MODEL_NAME = "gpt-4"
+
+# Custom OpenAI Configuration (for Azure OpenAI)
+[CUSTOM_OPENAI]
+API_KEY = "your-azure-openai-api-key"
+BASE_URL = "https://your-resource-name.openai.azure.com"
+MODEL_NAME = "your-deployment-name"
+
+# Groq Configuration
+[GROQ]
+API_KEY = "your-groq-api-key"
+MODEL_NAME = "mixtral-8x7b-32768"
+
+# Gemini Configuration
+[GEMINI]
+API_KEY = "your-gemini-api-key"
+MODEL_NAME = "gemini-pro"
+
+# Database Configuration
+[DATABASE]
+URL = "file:./dev.db"
+
+# Search Configuration
+[SEARCH]
+# Enable or disable automatic search features
+AUTO_IMAGE_SEARCH = true
+AUTO_VIDEO_SEARCH = true
+
+# Appearance Configuration
+[APPEARANCE]
+THEME = "system" # Options: "light", "dark", "system"
+
+[GENERAL]
+SIMILARITY_MEASURE = "cosine"
+KEEP_ALIVE = "true"
+
+[MODELS]
 [MODELS.OPENAI]
 API_KEY = ""
+API_URL = ""
 
 [MODELS.GROQ]
 API_KEY = ""
@@ -14,16 +54,16 @@ API_KEY = ""
 [MODELS.GEMINI]
 API_KEY = ""
 
-[MODELS.CUSTOM_OPENAI]
-API_KEY = ""
-API_URL = ""
-MODEL_NAME = ""
-
 [MODELS.OLLAMA]
-API_URL = "" # Ollama API URL - http://host.docker.internal:11434
+API_URL = ""
 
 [MODELS.DEEPSEEK]
 API_KEY = ""
 
+[MODELS.CUSTOM_OPENAI]
+API_URL = "https://your-azure-openai-endpoint.openai.azure.com"
+API_KEY = "your-azure-openai-api-key"
+MODEL_NAME = "gpt-4.5-preview"
+
 [API_ENDPOINTS]
-SEARXNG = "" # SearxNG API URL - http://localhost:32768
+SEARXNG = "http://searxng:8080" 
