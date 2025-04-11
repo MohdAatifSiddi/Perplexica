@@ -4,14 +4,68 @@ general:
   instance_name: 'searxng'
 
 search:
-  autocomplete: 'google'
+  safe_search: 0
+  autocomplete: ""
+  default_lang: ""
   formats:
     - html
     - json
 
 server:
-  secret_key: 'a2fb23f1b02e6ee83875b09826990de0f6bd908b6638e8c10277d415f6ab852b' # Is overwritten by ${SEARXNG_SECRET}
+  port: 8080
+  bind_address: "0.0.0.0"
+  secret_key: "CHANGE_THIS_TO_SOMETHING_SECURE"
+  base_url: false
+  image_proxy: true
+  http_protocol_version: "1.0"
+  method: "GET"
+  cors_support: true
+
+ui:
+  static_use_hash: true
+  theme: simple
+  results_on_new_tab: false
+  infinite_scroll: false
+  center_alignment: true
+  query_in_title: true
+  search_on_category_select: true
+  cache: true
+
+outgoing:
+  request_timeout: 2.0
+  enable_http_proxy: false
+  max_request_timeout: 3.5
+  pool_connections: 100
+  pool_maxsize: 100
+  max_retries: 3
+  retry_on_http_error: false
+  pool_block: false
+
+result_proxy:
+  url: ""
+  key: ""
+
+plugins:
+  - name: hash_plugin
+  - name: infinite_scroll_plugin
+  - name: open_results_in_new_tab_plugin
+  - name: self_info_plugin
+  - name: tracker_url_remover_plugin
+  - name: vim_hotkeys_plugin
 
 engines:
-  - name: wolframalpha
+  - name: bing
+    shortcut: bi
+    base_url: https://www.bing.com
+    search_url: https://www.bing.com/search?q={query}&first={pageno}
+    disabled: false
+  - name: duckduckgo
+    shortcut: dd
+    base_url: https://duckduckgo.com
+    search_url: https://duckduckgo.com/?q={query}&t=h_&ia=web
+    disabled: false
+  - name: google
+    shortcut: go
+    base_url: https://www.google.com
+    search_url: https://www.google.com/search?q={query}&start={pageno}0
     disabled: false

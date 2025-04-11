@@ -1,27 +1,42 @@
-FROM node:20.18.0-slim AS builder
+# Build stage
+FROM node:20-alpine AS builder
 
-WORKDIR /home/perplexica
+WORKDIR /app
 
-COPY package.json yarn.lock ./
-RUN yarn install --frozen-lockfile --network-timeout 600000
+# Copy package files
+COPY package*.json ./
+COPY yarn.lock ./
 
-COPY tsconfig.json next.config.mjs next-env.d.ts postcss.config.js drizzle.config.ts tailwind.config.ts ./
-COPY src ./src
-COPY public ./public
+# Install dependencies
+RUN yarn install --frozen-lockfile
 
-RUN mkdir -p /home/perplexica/data
+# Copy source code
+COPY . .
+
+# Build the application
 RUN yarn build
 
-FROM node:20.18.0-slim
+# Production stage
+FROM node:20-alpine AS runner
 
-WORKDIR /home/perplexica
+WORKDIR /app
 
-COPY --from=builder /home/perplexica/public ./public
-COPY --from=builder /home/perplexica/.next/static ./public/_next/static
+# Copy necessary files from builder
+COPY --from=builder /app/package*.json ./
+COPY --from=builder /app/yarn.lock ./
+COPY --from=builder /app/.next ./.next
+COPY --from=builder /app/public ./public
+COPY --from=builder /app/node_modules ./node_modules
 
-COPY --from=builder /home/perplexica/.next/standalone ./
-COPY --from=builder /home/perplexica/data ./data
+# Install production dependencies only
+RUN yarn install --production --frozen-lockfile
 
-RUN mkdir /home/perplexica/uploads
+# Set environment variables
+ENV NODE_ENV=production
+ENV PORT=3000
 
-CMD ["node", "server.js"]
+# Expose the port
+EXPOSE 3000
+
+# Start the application
+CMD ["yarn", "start"]

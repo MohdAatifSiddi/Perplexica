@@ -10,65 +10,73 @@ fi
 az login
 
 # Set variables
-RESOURCE_GROUP="weybre-ai-rg"
+RESOURCE_GROUP="perplexica-rg"
 LOCATION="eastus"
-APP_NAME="weybre-ai"
-DB_NAME="weybreaidb"
-DB_USER="weybreaiadmin"
-DB_PASSWORD=$(openssl rand -base64 32)
+ENVIRONMENT="perplexica-env"
+CONTAINER_APP="perplexica"
+KEY_VAULT="perplexica-kv"
 
 # Create resource group
 az group create --name $RESOURCE_GROUP --location $LOCATION
 
-# Create Azure Container Registry
-az acr create --resource-group $RESOURCE_GROUP --name $APP_NAME --sku Basic
-
-# Login to ACR
-az acr login --name $APP_NAME
-
-# Build and push Docker images
-docker-compose -f docker-compose.azure.yml build
-docker-compose -f docker-compose.azure.yml push
-
-# Create Azure Database for PostgreSQL
-az postgres flexible-server create \
-    --name $DB_NAME \
-    --resource-group $RESOURCE_GROUP \
-    --location $LOCATION \
-    --admin-user $DB_USER \
-    --admin-password $DB_PASSWORD \
-    --sku-name Standard_B1ms \
-    --version 15
-
 # Create Azure Container Apps environment
 az containerapp env create \
-    --name $APP_NAME-env \
-    --resource-group $RESOURCE_GROUP \
-    --location $LOCATION
+  --name $ENVIRONMENT \
+  --resource-group $RESOURCE_GROUP \
+  --location $LOCATION
 
-# Deploy Weybre AI
+# Create Key Vault
+az keyvault create \
+  --name $KEY_VAULT \
+  --resource-group $RESOURCE_GROUP \
+  --location $LOCATION
+
+# Store secrets in Key Vault
+az keyvault secret set \
+  --vault-name $KEY_VAULT \
+  --name "custom-openai-api-key" \
+  --value "$CUSTOM_OPENAI_API_KEY"
+
+az keyvault secret set \
+  --vault-name $KEY_VAULT \
+  --name "custom-openai-api-url" \
+  --value "$CUSTOM_OPENAI_API_URL"
+
+az keyvault secret set \
+  --vault-name $KEY_VAULT \
+  --name "custom-openai-model-name" \
+  --value "$CUSTOM_OPENAI_MODEL_NAME"
+
+# Create a storage account for Searxng configuration
+az storage account create \
+  --name "${RESOURCE_GROUP}storage" \
+  --resource-group $RESOURCE_GROUP \
+  --location $LOCATION \
+  --sku Standard_LRS
+
+# Create a file share for Searxng configuration
+az storage share create \
+  --name "searxng-config" \
+  --account-name "${RESOURCE_GROUP}storage"
+
+# Upload Searxng configuration
+az storage file upload \
+  --share-name "searxng-config" \
+  --source "./searxng/settings.yml" \
+  --account-name "${RESOURCE_GROUP}storage"
+
+# Deploy Container App
 az containerapp create \
-    --name $APP_NAME \
-    --resource-group $RESOURCE_GROUP \
-    --environment $APP_NAME-env \
-    --image $APP_NAME.azurecr.io/weybre-ai:latest \
-    --target-port 3000 \
-    --ingress external \
-    --env-vars \
-        DATABASE_URL="postgresql://$DB_USER:$DB_PASSWORD@$DB_NAME.postgres.database.azure.com:5432/postgres" \
-        SEARXNG_API_URL="http://searxng:8080"
+  --name $CONTAINER_APP \
+  --resource-group $RESOURCE_GROUP \
+  --environment $ENVIRONMENT \
+  --yaml azure-container-apps.yaml
 
-# Deploy SearxNG
-az containerapp create \
-    --name searxng \
-    --resource-group $RESOURCE_GROUP \
-    --environment $APP_NAME-env \
-    --image searxng/searxng:latest \
-    --target-port 8080 \
-    --ingress internal \
-    --env-vars \
-        INSTANCE_NAME="Weybre AI Search" \
-        SEARXNG_BASE_URL="http://localhost:8080"
+# Get the URL
+az containerapp show \
+  --name $CONTAINER_APP \
+  --resource-group $RESOURCE_GROUP \
+  --query "properties.configuration.ingress.fqdn" \
+  --output tsv
 
-echo "Deployment completed!"
-echo "Database connection string: postgresql://$DB_USER:$DB_PASSWORD@$DB_NAME.postgres.database.azure.com:5432/postgres" 
+echo "Deployment completed!" 

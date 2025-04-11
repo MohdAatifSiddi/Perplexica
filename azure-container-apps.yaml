@@ -1,0 +1,58 @@
+name: perplexica
+location: eastus
+identity:
+  type: SystemAssigned
+properties:
+  managedEnvironmentId: /subscriptions/{subscription-id}/resourceGroups/{resource-group}/providers/Microsoft.App/managedEnvironments/{environment-name}
+  configuration:
+    ingress:
+      external: true
+      targetPort: 3000
+      transport: http
+    secrets:
+      - name: custom-openai-api-key
+        keyVaultReference:
+          secretIdentifier: https://{vault-name}.vault.azure.net/secrets/custom-openai-api-key
+      - name: custom-openai-api-url
+        keyVaultReference:
+          secretIdentifier: https://{vault-name}.vault.azure.net/secrets/custom-openai-api-url
+      - name: custom-openai-model-name
+        keyVaultReference:
+          secretIdentifier: https://{vault-name}.vault.azure.net/secrets/custom-openai-model-name
+  template:
+    containers:
+      - name: perplexica
+        image: itzcrazykns1337/perplexica:main
+        env:
+          - name: CUSTOM_OPENAI_API_KEY
+            secretRef: custom-openai-api-key
+          - name: CUSTOM_OPENAI_API_URL
+            secretRef: custom-openai-api-url
+          - name: CUSTOM_OPENAI_MODEL_NAME
+            secretRef: custom-openai-model-name
+          - name: SEARXNG_API_URL
+            value: http://searxng:8080
+        resources:
+          cpu: 1.0
+          memory: 2Gi
+      - name: searxng
+        image: searxng/searxng:latest
+        env:
+          - name: INSTANCE_NAME
+            value: "Perplexica Search"
+          - name: SEARXNG_BASE_URL
+            value: "http://localhost:8080"
+          - name: SEARXNG_SETTINGS_PATH
+            value: "/etc/searxng/settings.yml"
+        volumeMounts:
+          - name: searxng-config
+            mountPath: /etc/searxng
+        resources:
+          cpu: 0.5
+          memory: 1Gi
+    volumes:
+      - name: searxng-config
+        storageType: EmptyDir
+    scale:
+      minReplicas: 1
+      maxReplicas: 10 
