@@ -11,9 +11,8 @@ DEEPSEEK = { API_KEY = "" }
 OLLAMA = { API_URL = "" }
 
 [MODELS.CUSTOM_OPENAI]
-API_KEY = "5BjV2gm9Ry0tVt9ID7gBynw8Ee6Ewm56zALIirWB36AV0BzXIJ9rJQQJ99BDACHYHv6XJ3w3AAAAACOGVYIm"
-API_URL = "https://mekot-m98ufofa-eastus2.openai.azure.com"
-MODEL_NAME = "gpt-4.5-preview"
-
+API_KEY = ""
+API_URL = ""
+MODEL_NAME = "
 [API_ENDPOINTS]
-SEARXNG = "http://20.65.200.13"
+SEARXNG = ""
