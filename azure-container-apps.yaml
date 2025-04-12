@@ -22,7 +22,7 @@ properties:
   template:
     containers:
       - name: perplexica
-        image: itzcrazykns1337/perplexica:main
+        image: {your-container-registry}.azurecr.io/perplexica:latest
         env:
           - name: CUSTOM_OPENAI_API_KEY
             secretRef: custom-openai-api-key
@@ -35,6 +35,13 @@ properties:
         resources:
           cpu: 1.0
           memory: 2Gi
+        probes:
+          - type: Liveness
+            httpGet:
+              path: /api/health
+              port: 3000
+            initialDelaySeconds: 10
+            periodSeconds: 30
       - name: searxng
         image: searxng/searxng:latest
         env:

@@ -1,0 +1,25 @@
+name: perplexica
+location: eastus
+properties:
+  serverFarmId: /subscriptions/{subscription-id}/resourceGroups/{resource-group}/providers/Microsoft.Web/serverfarms/{app-service-plan}
+  siteConfig:
+    appSettings:
+      - name: WEBSITE_NODE_DEFAULT_VERSION
+        value: "~20"
+      - name: CUSTOM_OPENAI_API_KEY
+        value: "@Microsoft.KeyVault(SecretUri=https://{vault-name}.vault.azure.net/secrets/custom-openai-api-key)"
+      - name: CUSTOM_OPENAI_API_URL
+        value: "@Microsoft.KeyVault(SecretUri=https://{vault-name}.vault.azure.net/secrets/custom-openai-api-url)"
+      - name: CUSTOM_OPENAI_MODEL_NAME
+        value: "@Microsoft.KeyVault(SecretUri=https://{vault-name}.vault.azure.net/secrets/custom-openai-model-name)"
+      - name: SEARXNG_API_URL
+        value: "http://searxng:8080"
+      - name: NODE_ENV
+        value: "production"
+      - name: PORT
+        value: "3000"
+    linuxFxVersion: "NODE|20-lts"
+    healthCheckPath: "/api/health"
+    cors:
+      allowedOrigins: ["*"]
+  httpsOnly: true 

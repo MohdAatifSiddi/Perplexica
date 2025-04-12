@@ -1,4 +1,4 @@
-use_default_settings: true
+use_default_settings: false
 
 general:
   instance_name: 'searxng'
@@ -20,6 +20,10 @@ server:
   http_protocol_version: "1.0"
   method: "GET"
   cors_support: true
+  cors_allow_origin: "*"
+  cors_allow_credentials: true
+  cors_allow_headers: ["*"]
+  cors_allow_methods: ["*"]
 
 ui:
   static_use_hash: true
@@ -40,32 +44,62 @@ outgoing:
   max_retries: 3
   retry_on_http_error: false
   pool_block: false
+  useragent_suffix: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
 
 result_proxy:
   url: ""
   key: ""
 
-plugins:
-  - name: hash_plugin
-  - name: infinite_scroll_plugin
-  - name: open_results_in_new_tab_plugin
-  - name: self_info_plugin
-  - name: tracker_url_remover_plugin
-  - name: vim_hotkeys_plugin
+plugins: {}
 
 engines:
-  - name: bing
-    shortcut: bi
-    base_url: https://www.bing.com
-    search_url: https://www.bing.com/search?q={query}&first={pageno}
-    disabled: false
-  - name: duckduckgo
-    shortcut: dd
-    base_url: https://duckduckgo.com
-    search_url: https://duckduckgo.com/?q={query}&t=h_&ia=web
-    disabled: false
   - name: google
-    shortcut: go
-    base_url: https://www.google.com
+    shortcut: g
     search_url: https://www.google.com/search?q={query}&start={pageno}0
     disabled: false
+  - name: soundcloud
+    disabled: true
+  - name: bing
+    disabled: true
+  - name: duckduckgo
+    disabled: true
+  - name: yahoo
+    disabled: true
+  - name: qwant
+    disabled: true
+  - name: startpage
+    disabled: true
+  - name: brave
+    disabled: true
+  - name: mojeek
+    disabled: true
+  - name: archlinux
+    disabled: true
+  - name: archive
+    disabled: true
+  - name: arxiv
+    disabled: true
+  - name: wikipedia
+    disabled: true
+  - name: wikidata
+    disabled: true
+  - name: wikimedia
+    disabled: true
+  - name: wolframalpha
+    disabled: true
+  - name: youtube
+    disabled: true
+  - name: dailymotion
+    disabled: true
+  - name: vimeo
+    disabled: true
+  - name: reddit
+    disabled: true
+  - name: twitter
+    disabled: true
+  - name: github
+    disabled: true
+  - name: gitlab
+    disabled: true
+  - name: bitbucket
+    disabled: true
