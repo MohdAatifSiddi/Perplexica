@@ -33,11 +33,15 @@ interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
 
 const Input = ({ className, isSaving, onSave, ...restProps }: InputProps) => {
   return (
-    <div className="relative">
+    <div className="relative group">
       <input
         {...restProps}
         className={cn(
-          'bg-light-secondary dark:bg-dark-secondary w-full px-3 py-2 flex items-center overflow-hidden border border-light-200 dark:border-dark-200 dark:text-white rounded-lg text-sm',
+          'bg-gradient-to-b from-white to-blue-50/50 dark:from-gray-900 dark:to-blue-900/10 w-full px-4 py-3 flex items-center overflow-hidden border-0 rounded-xl text-sm',
+          'transition-all duration-200 ease-in-out',
+          'hover:shadow-xl hover:shadow-blue-200/30 dark:hover:shadow-blue-800/20',
+          'hover:translate-y-[-2px]',
+          'focus:ring-2 focus:ring-blue-100 dark:focus:ring-blue-800',
           isSaving && 'pr-10',
           className,
         )}
@@ -47,7 +51,7 @@ const Input = ({ className, isSaving, onSave, ...restProps }: InputProps) => {
         <div className="absolute right-3 top-1/2 -translate-y-1/2">
           <Loader2
             size={16}
-            className="animate-spin text-black/70 dark:text-white/70"
+            className="animate-spin text-blue-500 dark:text-blue-400"
           />
         </div>
       )}
@@ -67,10 +71,17 @@ const Textarea = ({
   ...restProps
 }: TextareaProps) => {
   return (
-    <div className="relative">
+    <div className="relative group">
       <textarea
         placeholder="Any special instructions for the LLM"
-        className="placeholder:text-sm text-sm w-full flex items-center justify-between p-3 bg-light-secondary dark:bg-dark-secondary rounded-lg hover:bg-light-200 dark:hover:bg-dark-200 transition-colors"
+        className={cn(
+          'bg-gradient-to-b from-white to-blue-50/50 dark:from-gray-900 dark:to-blue-900/10 w-full px-4 py-3 flex items-center justify-between rounded-xl',
+          'transition-all duration-200 ease-in-out',
+          'hover:shadow-xl hover:shadow-blue-200/30 dark:hover:shadow-blue-800/20',
+          'hover:translate-y-[-2px]',
+          'focus:ring-2 focus:ring-blue-100 dark:focus:ring-blue-800',
+          className
+        )}
         rows={4}
         onBlur={(e) => onSave?.(e.target.value)}
         {...restProps}
@@ -79,7 +90,7 @@ const Textarea = ({
         <div className="absolute right-3 top-3">
           <Loader2
             size={16}
-            className="animate-spin text-black/70 dark:text-white/70"
+            className="animate-spin text-blue-500 dark:text-blue-400"
           />
         </div>
       )}
@@ -95,19 +106,25 @@ const Select = ({
   options: { value: string; label: string; disabled?: boolean }[];
 }) => {
   return (
-    <select
-      {...restProps}
-      className={cn(
-        'bg-light-secondary dark:bg-dark-secondary px-3 py-2 flex items-center overflow-hidden border border-light-200 dark:border-dark-200 dark:text-white rounded-lg text-sm',
-        className,
-      )}
-    >
-      {options.map(({ label, value, disabled }) => (
-        <option key={value} value={value} disabled={disabled}>
-          {label}
-        </option>
-      ))}
-    </select>
+    <div className="relative group">
+      <select
+        {...restProps}
+        className={cn(
+          'bg-gradient-to-b from-white to-blue-50/50 dark:from-gray-900 dark:to-blue-900/10 px-4 py-3 flex items-center overflow-hidden border-0 rounded-xl text-sm',
+          'transition-all duration-200 ease-in-out',
+          'hover:shadow-xl hover:shadow-blue-200/30 dark:hover:shadow-blue-800/20',
+          'hover:translate-y-[-2px]',
+          'focus:ring-2 focus:ring-blue-100 dark:focus:ring-blue-800',
+          className,
+        )}
+      >
+        {options.map(({ label, value, disabled }) => (
+          <option key={value} value={value} disabled={disabled}>
+            {label}
+          </option>
+        ))}
+      </select>
+    </div>
   );
 };
 
@@ -118,95 +135,37 @@ const SettingsSection = ({
   title: string;
   children: React.ReactNode;
 }) => (
-  <div className="flex flex-col space-y-4 p-4 bg-light-secondary/50 dark:bg-dark-secondary/50 rounded-xl border border-light-200 dark:border-dark-200">
-    <h2 className="text-black/90 dark:text-white/90 font-medium">{title}</h2>
-    {children}
+  <div className="relative flex flex-col space-y-4 p-6 bg-gradient-to-b from-white to-blue-50/50 dark:from-gray-900 dark:to-blue-900/10 rounded-[3rem] shadow-2xl shadow-blue-200/30 dark:shadow-blue-900/20 overflow-hidden">
+    {/* Top C-shape */}
+    <div className="absolute -top-10 left-0 w-full h-10 bg-gradient-to-b from-white to-blue-50/50 dark:from-gray-900 dark:to-blue-900/10 rounded-tl-[3rem] rounded-tr-[3rem] shadow-lg shadow-blue-200/20 dark:shadow-blue-900/10" />
+    
+    <h2 className="text-blue-600 dark:text-blue-400 font-medium text-lg">{title}</h2>
+    <div className="relative z-10">
+      {children}
+    </div>
+
+    {/* Bottom C-shape */}
+    <div className="absolute -bottom-10 left-0 w-full h-10 bg-gradient-to-b from-white to-blue-50/50 dark:from-gray-900 dark:to-blue-900/10 rounded-bl-[3rem] rounded-br-[3rem] shadow-lg shadow-blue-200/20 dark:shadow-blue-900/10" />
   </div>
 );
 
 const Page = () => {
-  const [config, setConfig] = useState<SettingsType | null>(null);
-  const [chatModels, setChatModels] = useState<Record<string, any>>({});
-  const [embeddingModels, setEmbeddingModels] = useState<Record<string, any>>(
-    {},
-  );
-  const [selectedChatModelProvider, setSelectedChatModelProvider] = useState<
-    string | null
-  >(null);
-  const [selectedChatModel, setSelectedChatModel] = useState<string | null>(
-    null,
-  );
-  const [selectedEmbeddingModelProvider, setSelectedEmbeddingModelProvider] =
-    useState<string | null>(null);
-  const [selectedEmbeddingModel, setSelectedEmbeddingModel] = useState<
-    string | null
-  >(null);
   const [isLoading, setIsLoading] = useState(false);
   const [automaticImageSearch, setAutomaticImageSearch] = useState(false);
   const [automaticVideoSearch, setAutomaticVideoSearch] = useState(false);
   const [systemInstructions, setSystemInstructions] = useState<string>('');
-  const [savingStates, setSavingStates] = useState<Record<string, boolean>>({});
 
   useEffect(() => {
     const fetchConfig = async () => {
       setIsLoading(true);
-      const res = await fetch(`/api/config`, {
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
-
-      const data = (await res.json()) as SettingsType;
-      setConfig(data);
-
-      const chatModelProvidersKeys = Object.keys(data.chatModelProviders || {});
-      const embeddingModelProvidersKeys = Object.keys(
-        data.embeddingModelProviders || {},
-      );
-
-      const defaultChatModelProvider =
-        chatModelProvidersKeys.length > 0 ? chatModelProvidersKeys[0] : '';
-      const defaultEmbeddingModelProvider =
-        embeddingModelProvidersKeys.length > 0
-          ? embeddingModelProvidersKeys[0]
-          : '';
-
-      const chatModelProvider =
-        localStorage.getItem('chatModelProvider') ||
-        defaultChatModelProvider ||
-        '';
-      const chatModel =
-        localStorage.getItem('chatModel') ||
-        (data.chatModelProviders &&
-        data.chatModelProviders[chatModelProvider]?.length > 0
-          ? data.chatModelProviders[chatModelProvider][0].name
-          : undefined) ||
-        '';
-      const embeddingModelProvider =
-        localStorage.getItem('embeddingModelProvider') ||
-        defaultEmbeddingModelProvider ||
-        '';
-      const embeddingModel =
-        localStorage.getItem('embeddingModel') ||
-        (data.embeddingModelProviders &&
-          data.embeddingModelProviders[embeddingModelProvider]?.[0].name) ||
-        '';
-
-      setSelectedChatModelProvider(chatModelProvider);
-      setSelectedChatModel(chatModel);
-      setSelectedEmbeddingModelProvider(embeddingModelProvider);
-      setSelectedEmbeddingModel(embeddingModel);
-      setChatModels(data.chatModelProviders || {});
-      setEmbeddingModels(data.embeddingModelProviders || {});
-
+      
       setAutomaticImageSearch(
         localStorage.getItem('autoImageSearch') === 'true',
       );
       setAutomaticVideoSearch(
         localStorage.getItem('autoVideoSearch') === 'true',
       );
-
-      setSystemInstructions(localStorage.getItem('systemInstructions')!);
+      setSystemInstructions(localStorage.getItem('systemInstructions') || '');
 
       setIsLoading(false);
     };
@@ -214,305 +173,93 @@ const Page = () => {
     fetchConfig();
   }, []);
 
-  const saveConfig = async (key: string, value: any) => {
-    setSavingStates((prev) => ({ ...prev, [key]: true }));
-
-    try {
-      const updatedConfig = {
-        ...config,
-        [key]: value,
-      } as SettingsType;
-
-      const response = await fetch(`/api/config`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(updatedConfig),
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to update config');
-      }
-
-      setConfig(updatedConfig);
-
-      if (
-        key.toLowerCase().includes('api') ||
-        key.toLowerCase().includes('url')
-      ) {
-        const res = await fetch(`/api/config`, {
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        });
-
-        if (!res.ok) {
-          throw new Error('Failed to fetch updated config');
-        }
-
-        const data = await res.json();
-
-        setChatModels(data.chatModelProviders || {});
-        setEmbeddingModels(data.embeddingModelProviders || {});
-
-        const currentChatProvider = selectedChatModelProvider;
-        const newChatProviders = Object.keys(data.chatModelProviders || {});
-
-        if (!currentChatProvider && newChatProviders.length > 0) {
-          const firstProvider = newChatProviders[0];
-          const firstModel = data.chatModelProviders[firstProvider]?.[0]?.name;
-
-          if (firstModel) {
-            setSelectedChatModelProvider(firstProvider);
-            setSelectedChatModel(firstModel);
-            localStorage.setItem('chatModelProvider', firstProvider);
-            localStorage.setItem('chatModel', firstModel);
-          }
-        } else if (
-          currentChatProvider &&
-          (!data.chatModelProviders ||
-            !data.chatModelProviders[currentChatProvider] ||
-            !Array.isArray(data.chatModelProviders[currentChatProvider]) ||
-            data.chatModelProviders[currentChatProvider].length === 0)
-        ) {
-          const firstValidProvider = Object.entries(
-            data.chatModelProviders || {},
-          ).find(
-            ([_, models]) => Array.isArray(models) && models.length > 0,
-          )?.[0];
-
-          if (firstValidProvider) {
-            setSelectedChatModelProvider(firstValidProvider);
-            setSelectedChatModel(
-              data.chatModelProviders[firstValidProvider][0].name,
-            );
-            localStorage.setItem('chatModelProvider', firstValidProvider);
-            localStorage.setItem(
-              'chatModel',
-              data.chatModelProviders[firstValidProvider][0].name,
-            );
-          } else {
-            setSelectedChatModelProvider(null);
-            setSelectedChatModel(null);
-            localStorage.removeItem('chatModelProvider');
-            localStorage.removeItem('chatModel');
-          }
-        }
-
-        const currentEmbeddingProvider = selectedEmbeddingModelProvider;
-        const newEmbeddingProviders = Object.keys(
-          data.embeddingModelProviders || {},
-        );
-
-        if (!currentEmbeddingProvider && newEmbeddingProviders.length > 0) {
-          const firstProvider = newEmbeddingProviders[0];
-          const firstModel =
-            data.embeddingModelProviders[firstProvider]?.[0]?.name;
-
-          if (firstModel) {
-            setSelectedEmbeddingModelProvider(firstProvider);
-            setSelectedEmbeddingModel(firstModel);
-            localStorage.setItem('embeddingModelProvider', firstProvider);
-            localStorage.setItem('embeddingModel', firstModel);
-          }
-        } else if (
-          currentEmbeddingProvider &&
-          (!data.embeddingModelProviders ||
-            !data.embeddingModelProviders[currentEmbeddingProvider] ||
-            !Array.isArray(
-              data.embeddingModelProviders[currentEmbeddingProvider],
-            ) ||
-            data.embeddingModelProviders[currentEmbeddingProvider].length === 0)
-        ) {
-          const firstValidProvider = Object.entries(
-            data.embeddingModelProviders || {},
-          ).find(
-            ([_, models]) => Array.isArray(models) && models.length > 0,
-          )?.[0];
-
-          if (firstValidProvider) {
-            setSelectedEmbeddingModelProvider(firstValidProvider);
-            setSelectedEmbeddingModel(
-              data.embeddingModelProviders[firstValidProvider][0].name,
-            );
-            localStorage.setItem('embeddingModelProvider', firstValidProvider);
-            localStorage.setItem(
-              'embeddingModel',
-              data.embeddingModelProviders[firstValidProvider][0].name,
-            );
-          } else {
-            setSelectedEmbeddingModelProvider(null);
-            setSelectedEmbeddingModel(null);
-            localStorage.removeItem('embeddingModelProvider');
-            localStorage.removeItem('embeddingModel');
-          }
-        }
-
-        setConfig(data);
-      }
-
-      if (key === 'automaticImageSearch') {
-        localStorage.setItem('autoImageSearch', value.toString());
-      } else if (key === 'automaticVideoSearch') {
-        localStorage.setItem('autoVideoSearch', value.toString());
-      } else if (key === 'chatModelProvider') {
-        localStorage.setItem('chatModelProvider', value);
-      } else if (key === 'chatModel') {
-        localStorage.setItem('chatModel', value);
-      } else if (key === 'embeddingModelProvider') {
-        localStorage.setItem('embeddingModelProvider', value);
-      } else if (key === 'embeddingModel') {
-        localStorage.setItem('embeddingModel', value);
-      } else if (key === 'systemInstructions') {
-        localStorage.setItem('systemInstructions', value);
-      }
-    } catch (err) {
-      console.error('Failed to save:', err);
-      setConfig((prev) => ({ ...prev! }));
-    } finally {
-      setTimeout(() => {
-        setSavingStates((prev) => ({ ...prev, [key]: false }));
-      }, 500);
-    }
-  };
-
   return (
-    <div className="max-w-3xl mx-auto">
-      <div className="flex flex-col pt-4">
-        <div className="flex items-center space-x-2">
-          <Link href="/" className="lg:hidden">
-            <ArrowLeft className="text-black/70 dark:text-white/70" />
-          </Link>
-          <div className="flex flex-row space-x-0.5 items-center">
-            <SettingsIcon size={23} />
-            <h1 className="text-3xl font-medium p-2">Settings</h1>
-          </div>
-        </div>
-        <hr className="border-t border-[#2B2C2C] my-4 w-full" />
-      </div>
-
-      {isLoading ? (
-        <div className="flex flex-row items-center justify-center min-h-[50vh]">
-          <svg
-            aria-hidden="true"
-            className="w-8 h-8 text-light-200 fill-light-secondary dark:text-[#202020] animate-spin dark:fill-[#ffffff3b]"
-            viewBox="0 0 100 101"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
+    <div className="min-h-screen bg-gradient-to-b from-white to-blue-50/20 dark:from-gray-900 dark:to-blue-900/10 p-8">
+      <div className="max-w-4xl mx-auto space-y-6">
+        <div className="flex items-center justify-between mb-8">
+          <Link
+            href="/"
+            className="flex items-center space-x-2 text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 transition-colors"
           >
-            <path
-              d="M100 50.5908C100.003 78.2051 78.1951 100.003 50.5908 100C22.9765 99.9972 0.997224 78.018 1 50.4037C1.00281 22.7993 22.8108 0.997224 50.4251 1C78.0395 1.00281 100.018 22.8108 100 50.4251ZM9.08164 50.594C9.06312 73.3997 27.7909 92.1272 50.5966 92.1457C73.4023 92.1642 92.1298 73.4365 92.1483 50.6308C92.1669 27.8251 73.4392 9.0973 50.6335 9.07878C27.8278 9.06026 9.10003 27.787 9.08164 50.594Z"
-              fill="currentColor"
-            />
-            <path
-              d="M93.9676 39.0409C96.393 38.4037 97.8624 35.9116 96.9801 33.5533C95.1945 28.8227 92.871 24.3692 90.0681 20.348C85.6237 14.1775 79.4473 9.36872 72.0454 6.45794C64.6435 3.54717 56.3134 2.65431 48.3133 3.89319C45.869 4.27179 44.3768 6.77534 45.014 9.20079C45.6512 11.6262 48.1343 13.0956 50.5786 12.717C56.5073 11.8281 62.5542 12.5399 68.0406 14.7911C73.527 17.0422 78.2187 20.7487 81.5841 25.4923C83.7976 28.5886 85.4467 32.059 86.4416 35.7474C87.1273 38.1189 89.5423 39.6781 91.9676 39.0409Z"
-              fill="currentFill"
-            />
-          </svg>
+            <ArrowLeft className="w-5 h-5" />
+            <span>Back</span>
+          </Link>
+          <h1 className="text-2xl font-bold text-blue-600 dark:text-blue-400">Settings</h1>
+          <div className="w-5" /> {/* Spacer for alignment */}
         </div>
-      ) : (
-        config && (
-          <div className="flex flex-col space-y-6 pb-28 lg:pb-8">
-            <SettingsSection title="Appearance">
-              <div className="flex flex-col space-y-1">
-                <p className="text-black/70 dark:text-white/70 text-sm">
-                  Theme
-                </p>
-                <ThemeSwitcher />
-              </div>
-            </SettingsSection>
 
-            <SettingsSection title="Automatic Search">
-              <div className="flex flex-col space-y-4">
-                <div className="flex items-center justify-between p-3 bg-light-secondary dark:bg-dark-secondary rounded-lg hover:bg-light-200 dark:hover:bg-dark-200 transition-colors">
-                  <div className="flex items-center space-x-3">
-                    <div className="p-2 bg-light-200 dark:bg-dark-200 rounded-lg">
-                      <ImagesIcon
-                        size={18}
-                        className="text-black/70 dark:text-white/70"
-                      />
-                    </div>
-                    <div>
-                      <p className="text-sm text-black/90 dark:text-white/90 font-medium">
-                        Automatic Image Search
-                      </p>
-                      <p className="text-xs text-black/60 dark:text-white/60 mt-0.5">
-                        Automatically search for relevant images in chat
-                        responses
-                      </p>
-                    </div>
+        {isLoading ? (
+          <div className="flex justify-center items-center h-64">
+            <Loader2 className="w-8 h-8 animate-spin text-blue-500 dark:text-blue-400" />
+          </div>
+        ) : (
+          <div className="space-y-6">
+            <SettingsSection title="Search Settings">
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-2">
+                    <ImagesIcon className="w-5 h-5 text-blue-500 dark:text-blue-400" />
+                    <span className="text-gray-600 dark:text-gray-300">Automatic Image Search</span>
                   </div>
                   <Switch
                     checked={automaticImageSearch}
                     onChange={(checked) => {
                       setAutomaticImageSearch(checked);
-                      saveConfig('automaticImageSearch', checked);
+                      localStorage.setItem('autoImageSearch', checked.toString());
                     }}
                     className={cn(
-                      automaticImageSearch
-                        ? 'bg-[#24A0ED]'
-                        : 'bg-light-200 dark:bg-dark-200',
-                      'relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none',
+                      'relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-blue-100 dark:focus:ring-blue-800',
+                      automaticImageSearch ? 'bg-blue-500' : 'bg-gray-200 dark:bg-gray-700'
                     )}
                   >
                     <span
                       className={cn(
-                        automaticImageSearch
-                          ? 'translate-x-6'
-                          : 'translate-x-1',
                         'inline-block h-4 w-4 transform rounded-full bg-white transition-transform',
+                        automaticImageSearch ? 'translate-x-6' : 'translate-x-1'
                       )}
                     />
                   </Switch>
                 </div>
 
-                <div className="flex items-center justify-between p-3 bg-light-secondary dark:bg-dark-secondary rounded-lg hover:bg-light-200 dark:hover:bg-dark-200 transition-colors">
-                  <div className="flex items-center space-x-3">
-                    <div className="p-2 bg-light-200 dark:bg-dark-200 rounded-lg">
-                      <VideoIcon
-                        size={18}
-                        className="text-black/70 dark:text-white/70"
-                      />
-                    </div>
-                    <div>
-                      <p className="text-sm text-black/90 dark:text-white/90 font-medium">
-                        Automatic Video Search
-                      </p>
-                      <p className="text-xs text-black/60 dark:text-white/60 mt-0.5">
-                        Automatically search for relevant videos in chat
-                        responses
-                      </p>
-                    </div>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-2">
+                    <VideoIcon className="w-5 h-5 text-blue-500 dark:text-blue-400" />
+                    <span className="text-gray-600 dark:text-gray-300">Automatic Video Search</span>
                   </div>
                   <Switch
                     checked={automaticVideoSearch}
                     onChange={(checked) => {
                       setAutomaticVideoSearch(checked);
-                      saveConfig('automaticVideoSearch', checked);
+                      localStorage.setItem('autoVideoSearch', checked.toString());
                     }}
                     className={cn(
-                      automaticVideoSearch
-                        ? 'bg-[#24A0ED]'
-                        : 'bg-light-200 dark:bg-dark-200',
-                      'relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none',
+                      'relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-blue-100 dark:focus:ring-blue-800',
+                      automaticVideoSearch ? 'bg-blue-500' : 'bg-gray-200 dark:bg-gray-700'
                     )}
                   >
                     <span
                       className={cn(
-                        automaticVideoSearch
-                          ? 'translate-x-6'
-                          : 'translate-x-1',
                         'inline-block h-4 w-4 transform rounded-full bg-white transition-transform',
+                        automaticVideoSearch ? 'translate-x-6' : 'translate-x-1'
                       )}
                     />
                   </Switch>
                 </div>
               </div>
             </SettingsSection>
+
+            <SettingsSection title="System Instructions">
+              <Textarea
+                value={systemInstructions}
+                onChange={(e) => setSystemInstructions(e.target.value)}
+                onSave={(value) => {
+                  localStorage.setItem('systemInstructions', value);
+                }}
+              />
+            </SettingsSection>
           </div>
-        )
-      )}
+        )}
+      </div>
     </div>
   );
 };

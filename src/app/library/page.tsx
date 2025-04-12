@@ -57,56 +57,60 @@ const Page = () => {
       </svg>
     </div>
   ) : (
-    <div>
-      <div className="flex flex-col pt-4">
-        <div className="flex items-center">
-          <BookOpenText />
-          <h1 className="text-3xl font-medium p-2">Library</h1>
-        </div>
-        <hr className="border-t border-[#2B2C2C] my-4 w-full" />
-      </div>
-      {chats.length === 0 && (
-        <div className="flex flex-row items-center justify-center min-h-screen">
-          <p className="text-black/70 dark:text-white/70 text-sm">
-            No chats found.
-          </p>
-        </div>
-      )}
-      {chats.length > 0 && (
-        <div className="flex flex-col pb-20 lg:pb-2">
-          {chats.map((chat, i) => (
-            <div
-              className={cn(
-                'flex flex-col space-y-4 py-6',
-                i !== chats.length - 1
-                  ? 'border-b border-white-200 dark:border-dark-200'
-                  : '',
-              )}
-              key={i}
-            >
-              <Link
-                href={`/c/${chat.id}`}
-                className="text-black dark:text-white lg:text-xl font-medium truncate transition duration-200 hover:text-[#24A0ED] dark:hover:text-[#24A0ED] cursor-pointer"
-              >
-                {chat.title}
-              </Link>
-              <div className="flex flex-row items-center justify-between w-full">
-                <div className="flex flex-row items-center space-x-1 lg:space-x-1.5 text-black/70 dark:text-white/70">
-                  <ClockIcon size={15} />
-                  <p className="text-xs">
-                    {formatTimeDifference(new Date(), chat.createdAt)} Ago
-                  </p>
-                </div>
-                <DeleteChat
-                  chatId={chat.id}
-                  chats={chats}
-                  setChats={setChats}
-                />
+    <div className="min-h-screen bg-white">
+      <div className="min-h-screen">
+        <div className="container mx-auto px-4 py-8">
+          <div className="flex flex-col">
+            <div className="flex items-center space-x-3">
+              <div className="p-2 rounded-lg bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500">
+                <BookOpenText className="text-white" />
               </div>
+              <h1 className="text-3xl font-bold text-gray-800">Library</h1>
             </div>
-          ))}
+            <div className="h-px bg-gray-200 my-6 w-full" />
+          </div>
+          {chats.length === 0 && (
+            <div className="flex flex-row items-center justify-center min-h-[60vh]">
+              <p className="text-gray-500 text-sm">
+                No chats found.
+              </p>
+            </div>
+          )}
+          {chats.length > 0 && (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 pb-20 lg:pb-8">
+              {chats.map((chat, i) => (
+                <div
+                  key={i}
+                  className="bg-white border border-gray-200 rounded-xl p-6 transition-all duration-300 hover:scale-105 hover:shadow-lg hover:shadow-gray-200"
+                >
+                  <Link
+                    href={`/c/${chat.id}`}
+                    className="block"
+                  >
+                    <h3 className="text-gray-800 text-lg font-medium mb-4 truncate hover:text-blue-500 transition-colors duration-200">
+                      {chat.title}
+                    </h3>
+                  </Link>
+                  <div className="flex flex-row items-center justify-between w-full">
+                    <div className="flex flex-row items-center space-x-2 text-gray-500">
+                      <ClockIcon size={15} />
+                      <p className="text-xs">
+                        {formatTimeDifference(new Date(), chat.createdAt)} Ago
+                      </p>
+                    </div>
+                    <DeleteChat
+                      chatId={chat.id}
+                      onDelete={() => {
+                        setChats(chats.filter(c => c.id !== chat.id));
+                      }}
+                    />
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
-      )}
+      </div>
     </div>
   );
 };

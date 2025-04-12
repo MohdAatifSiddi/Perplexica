@@ -10,17 +10,14 @@ import {
 } from '@headlessui/react';
 import { Fragment, useState } from 'react';
 import { toast } from 'sonner';
-import { Chat } from '@/app/library/page';
 
 const DeleteChat = ({
   chatId,
-  chats,
-  setChats,
+  onDelete,
   redirect = false,
 }: {
   chatId: string;
-  chats: Chat[];
-  setChats: (chats: Chat[]) => void;
+  onDelete: () => void;
   redirect?: boolean;
 }) => {
   const [confirmationDialogOpen, setConfirmationDialogOpen] = useState(false);
@@ -40,9 +37,7 @@ const DeleteChat = ({
         throw new Error('Failed to delete chat');
       }
 
-      const newChats = chats.filter((chat) => chat.id !== chatId);
-
-      setChats(newChats);
+      onDelete();
 
       if (redirect) {
         window.location.href = '/';
@@ -87,7 +82,7 @@ const DeleteChat = ({
                 leaveFrom="opacity-100 scale-200"
                 leaveTo="opacity-0 scale-95"
               >
-                <DialogPanel className="w-full max-w-md transform rounded-2xl bg-light-secondary dark:bg-dark-secondary border border-light-200 dark:border-dark-200 p-6 text-left align-middle shadow-xl transition-all">
+                <DialogPanel className="w-full max-w-md transform overflow-hidden rounded-2xl bg-light-primary dark:bg-dark-primary p-6 text-left align-middle shadow-xl transition-all">
                   <DialogTitle className="text-lg font-medium leading-6 dark:text-white">
                     Delete Confirmation
                   </DialogTitle>

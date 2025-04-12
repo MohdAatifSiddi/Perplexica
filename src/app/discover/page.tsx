@@ -1,6 +1,7 @@
+/*
 'use client';
 
-import { Search } from 'lucide-react';
+import { Search, CheckCircle2 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { toast } from 'sonner';
@@ -19,25 +20,21 @@ const Page = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const res = await fetch(`/api/discover`, {
+        const res = await fetch('/api/discover', {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',
           },
         });
 
-        const data = await res.json();
-
         if (!res.ok) {
-          throw new Error(data.message);
+          throw new Error('Failed to fetch discover data');
         }
 
-        data.blogs = data.blogs.filter((blog: Discover) => blog.thumbnail);
-
+        const data = await res.json();
         setDiscover(data.blogs);
       } catch (err: any) {
-        console.error('Error fetching data:', err.message);
-        toast.error('Error fetching data');
+        console.error(err);
       } finally {
         setLoading(false);
       }
@@ -66,48 +63,55 @@ const Page = () => {
       </svg>
     </div>
   ) : (
-    <>
-      <div>
-        <div className="flex flex-col pt-4">
-          <div className="flex items-center">
-            <Search />
-            <h1 className="text-3xl font-medium p-2">Discover</h1>
+    <div className="min-h-screen bg-white">
+      <div className="container mx-auto px-4 py-8">
+        <div className="flex flex-col">
+          <div className="flex items-center space-x-3">
+            <div className="p-2 rounded-lg bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500">
+              <Search className="text-white" />
+            </div>
+            <h1 className="text-3xl font-bold text-gray-800">Discover</h1>
           </div>
-          <hr className="border-t border-[#2B2C2C] my-4 w-full" />
+          <div className="h-px bg-gray-200 my-6 w-full" />
         </div>
 
-        <div className="grid lg:grid-cols-3 sm:grid-cols-2 grid-cols-1 gap-4 pb-28 lg:pb-8 w-full justify-items-center lg:justify-items-start">
-          {discover &&
-            discover?.map((item, i) => (
-              <Link
-                href={`/?q=Summary: ${item.url}`}
-                key={i}
-                className="max-w-sm rounded-lg overflow-hidden bg-light-secondary dark:bg-dark-secondary hover:-translate-y-[1px] transition duration-200"
-                target="_blank"
-              >
-                <img
-                  className="object-cover w-full aspect-video"
-                  src={
-                    new URL(item.thumbnail).origin +
-                    new URL(item.thumbnail).pathname +
-                    `?id=${new URL(item.thumbnail).searchParams.get('id')}`
-                  }
-                  alt={item.title}
-                />
-                <div className="px-6 py-4">
-                  <div className="font-bold text-lg mb-2">
-                    {item.title.slice(0, 100)}...
-                  </div>
-                  <p className="text-black-70 dark:text-white/70 text-sm">
-                    {item.content.slice(0, 100)}...
-                  </p>
-                </div>
-              </Link>
-            ))}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 pb-20 lg:pb-8">
+          {discover && discover.map((item, i) => (
+            <Link
+              href={`/article/${encodeURIComponent(item.url)}`}
+              key={i}
+              className="bg-white border border-gray-200 rounded-xl overflow-hidden transition-all duration-300 hover:scale-105 hover:shadow-lg hover:shadow-gray-200"
+            >
+              <img
+                className="object-cover w-full aspect-video"
+                src={
+                  (() => {
+                    try {
+                      const url = new URL(item.thumbnail);
+                      return url.origin + url.pathname + `?id=${url.searchParams.get('id')}`;
+                    } catch (error) {
+                      console.error('Invalid URL:', item.thumbnail);
+                      return '/default-placeholder.jpg'; // Fallback to a default image
+                    }
+                  })()
+                }
+                alt={item.title}
+              />
+              <div className="p-6">
+                <h3 className="text-gray-800 text-lg font-medium mb-4 truncate hover:text-blue-500 transition-colors duration-200">
+                  {item.title.slice(0, 100)}...
+                </h3>
+                <p className="text-gray-500 text-sm">
+                  {item.content.slice(0, 100)}...
+                </p>
+              </div>
+            </Link>
+          ))}
         </div>
       </div>
-    </>
+    </div>
   );
 };
 
 export default Page;
+*/

@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, useCallback } from 'react';
 import { Document } from '@langchain/core/documents';
 import Navbar from './Navbar';
 import Chat from './Chat';
@@ -535,6 +535,14 @@ const ChatWindow = ({ id }: { id?: string }) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isConfigReady, isReady, initialMessage]);
 
+  const handleDelete = useCallback(() => {
+    setMessages([]);
+    setChatHistory([]);
+    setChatId(undefined);
+    setNewChatCreated(true);
+    window.location.href = '/';
+  }, []);
+
   if (hasError) {
     return (
       <div className="relative">
@@ -559,7 +567,11 @@ const ChatWindow = ({ id }: { id?: string }) => {
       <div>
         {messages.length > 0 ? (
           <>
-            <Navbar chatId={chatId!} messages={messages} />
+            <Navbar 
+              chatId={chatId!} 
+              messages={messages} 
+              onDelete={handleDelete} 
+            />
             <Chat
               loading={loading}
               messages={messages}
